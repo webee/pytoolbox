@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function, division
 import glob
 import os
-from .dbe import from_db
+from ..util.dbe import from_db
 
 
 def migrate(script_path):
