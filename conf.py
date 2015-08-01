@@ -38,6 +38,15 @@ class CustomizedConfig(ConfigParser):
             return int(raw)
 
 
+class SectionReader(object):
+    def __init__(self, _config, section_name):
+        self._config = _config
+        self._section_name = section_name
+
+    def __getattr__(self, item):
+        return self._config.get(self._section_name, item)
+
+
 env = os.getenv('ENV')
 config_path = os.path.join(project_root(), 'conf', '%s.cfg' % env)
 if not os.path.exists(config_path):
