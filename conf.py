@@ -39,5 +39,9 @@ class CustomizedConfig(ConfigParser):
 
 
 env = os.getenv('ENV')
+config_path = os.path.join(project_root(), 'conf', '%s.cfg' % env)
+if not os.path.exists(config_path):
+    raise IOError("Cannot find config file at %s" % config_path)
+
 config = CustomizedConfig()
-config.read((os.path.join(project_root(), 'conf', '%s.cfg' % env)))
+config.read(config_path)
