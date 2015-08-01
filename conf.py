@@ -3,6 +3,8 @@ from __future__ import unicode_literals, print_function, division
 from ConfigParser import ConfigParser
 import os
 
+from .root import project_root
+
 
 __all__ = ['get', 'config']
 
@@ -38,4 +40,4 @@ class CustomizedConfig(ConfigParser):
 
 env = os.getenv('ENV')
 config = CustomizedConfig()
-config.read((os.path.join(__path__[0], '%s.cfg' % env)))
+config.read((os.path.join(project_root(), 'conf', '%s.cfg' % env)))
