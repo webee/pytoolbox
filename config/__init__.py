@@ -2,15 +2,15 @@
 from __future__ import unicode_literals, print_function, division
 import os
 
-from ._config import CustomizedConfig
-from ._root import project_root
+from _config import CustomizedConfig
+from _root import project_root
 
 
-__all__ = ['get', 'config']
+__all__ = ['get']
 
 
 def get(section, option):
-    return config.get(section, option)
+    return _conf.get(section, option)
 
 
 class SectionReader(object):
@@ -28,5 +28,5 @@ config_path = os.path.join(project_root(), 'conf', '%s.cfg' % _env)
 if not os.path.exists(config_path):
     raise IOError("Cannot find config file at %s" % config_path)
 
-config = CustomizedConfig()
-config.read(config_path)
+_conf = CustomizedConfig()
+_conf.read(config_path)

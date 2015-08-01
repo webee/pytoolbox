@@ -7,7 +7,7 @@ _DEEPS = 4
 
 def project_root():
     path = os.path.realpath(__file__)
-    for i in range(0, _DEEPS - 1):
+    for i in range(0, _DEEPS):
         path = _parent(path)
     return path
 
