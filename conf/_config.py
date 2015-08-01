@@ -1,16 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 from ConfigParser import ConfigParser
-import os
-
-from .root import project_root
-
-
-__all__ = ['get', 'config']
-
-
-def get(section, option):
-    return config.get(section, option)
 
 
 class CustomizedConfig(ConfigParser):
@@ -36,21 +26,3 @@ class CustomizedConfig(ConfigParser):
             return int(raw[:-1])
         else:
             return int(raw)
-
-
-class SectionReader(object):
-    def __init__(self, _config, section_name):
-        self._config = _config
-        self._section_name = section_name
-
-    def __getattr__(self, item):
-        return self._config.get(self._section_name, item)
-
-
-env = os.getenv('ENV')
-config_path = os.path.join(project_root(), 'conf', '%s.cfg' % env)
-if not os.path.exists(config_path):
-    raise IOError("Cannot find config file at %s" % config_path)
-
-config = CustomizedConfig()
-config.read(config_path)
