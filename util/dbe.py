@@ -5,9 +5,11 @@ from functools import wraps
 from contextlib import contextmanager
 import sqlalchemy
 from sqlalchemy import create_engine
-from .log import get_logger
+from log import get_logger
+from .. import config
 
-LOGGER = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
+
+_logger = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
 
 
 @contextmanager
@@ -45,7 +47,7 @@ def require_db_context():
         yield DatabaseInterface(conn)
 
 
-def db_operate(func):
+def db_context(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if '_db' in kwargs:
@@ -60,38 +62,33 @@ def db_operate(func):
 
 
 class DatabaseInterface(object):
-    def __init__(self, conn, is_engine=False):
+    def __init__(self, conn=None):
         self.conn = conn
-        self.is_engine = is_engine
 
     def __eq__(self, other):
         if other is None or not isinstance(other, DatabaseInterface):
             return False
-        return self.conn == other.conn and self.is_engine == other.is_engine
-
-    @property
-    def connection(self):
-        if self.is_engine:
-            raise AttributeError('this database is engine based.')
-        return self.conn
-
-    @property
-    def engine(self):
-        if not self.is_engine:
-            raise AttributeError('this database is connection based.')
-        return self.conn
+        return self.conn == other.conn
 
     def sleep(self, duration):
-        self.conn.execute("select SLEEP(%s)", (duration,))
+        sql = "select SLEEP(%s)"
+        self._execute(sql, (duration,))
 
     def has_rows(self, sql, **kwargs):
         return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
 
+    def _execute(self, *args, **kwargs):
+        if self.conn is None:
+            with engine.contextual_connect() as conn:
+                return conn.execution_options(autocommit=True).execute(*args, **kwargs)
+        else:
+            return self.conn.execution_options(autocommit=True).execute(*args, **kwargs)
+
     def executemany(self, sql, seq_of_parameters):
         try:
-            res = self.conn.execute(sql, seq_of_parameters)
+            res = self._execute(sql, seq_of_parameters)
         except:
-            LOGGER.exception(
+            _logger.exception(
                 'failed to executemany statement: sql is %(sql)s and seq_of_parameters are %(seq_of_parameters)s', {
                     'sql': sql,
                     'seq_of_parameters': seq_of_parameters
@@ -101,9 +98,9 @@ class DatabaseInterface(object):
 
     def execute(self, sql, *args, **kwargs):
         try:
-            res = self.conn.execute(sql, args or kwargs)
+            res = self._execute(sql, args or kwargs)
         except:
-            LOGGER.exception('failed to execute statement: sql is %(sql)s and args are %(args)s', {
+            _logger.exception('failed to execute statement: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': args or kwargs
             })
@@ -128,13 +125,13 @@ class DatabaseInterface(object):
     def get(self, sql, *args, **kwargs):
         rows = self._query(sql, *args, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned: sql is %(sql)s and args are %(args)s', {
+            _logger.debug('No rows returned: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': args or kwargs
             })
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned: sql is %(sql)s and args are %(args)s', {
+            _logger.warning('More than one rows returned: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': args or kwargs
             })
@@ -143,13 +140,13 @@ class DatabaseInterface(object):
     def get_scalar(self, sql, *args, **kwargs):
         rows = self._query(sql, *args, **kwargs)
         if not rows:
-            LOGGER.debug('No rows returned: sql is %(sql)s and args are %(args)s', {
+            _logger.debug('No rows returned: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': args or kwargs
             })
             return None
         if len(rows) > 1:
-            LOGGER.warning('More than one rows returned: sql is %(sql)s and args are %(args)s', {
+            _logger.warning('More than one rows returned: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': args or kwargs
             })
@@ -180,9 +177,9 @@ class DatabaseInterface(object):
         sql = ''.join(fragments)
 
         try:
-            res = self.conn.execute(sql, fields)
+            res = self._execute(sql, fields)
         except:
-            LOGGER.exception('failed to execute query: sql is %(sql)s and args are %(args)s', {
+            _logger.exception('failed to execute query: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': fields
             })
@@ -194,9 +191,9 @@ class DatabaseInterface(object):
 
     def _query(self, sql, *args, **kwargs):
         try:
-            res = self.conn.execute(sql, args or kwargs)
+            res = self._execute(sql, args or kwargs)
         except:
-            LOGGER.exception('failed to execute query: sql is %(sql)s and args are %(args)s', {
+            _logger.exception('failed to execute query: sql is %(sql)s and args are %(args)s', {
                 'sql': sql,
                 'args': args or kwargs
             })
@@ -205,21 +202,18 @@ class DatabaseInterface(object):
 
 
 def create_db_engine(**kwargs):
-    return create_engine('', pool_size=30, max_overflow=60, pool_recycle=3600, pool_timeout=60, **kwargs)
-    # from top_config import db as db_config
-    # url = sqlalchemy.engine.url.URL('mysql',
-    #                                 db_config.USERNAME,
-    #                                 db_config.PASSWORD,
-    #                                 db_config.HOST,
-    #                                 db_config.PORT,
-    #                                 db_config.INSTANCE,
-    #                                 {'charset': 'utf8'}
-    #                                 )
-    # return create_engine(url, pool_size=30, max_overflow=60, pool_recycle=3600, pool_timeout=60, **kwargs)
+    db_host = config.get('database', 'host')
+    db_port = config.get('database', 'port')
+    db_instance = config.get('database', 'instance')
+    username = config.get('database', 'user')
+    password = config.get('database', 'password')
+    url = sqlalchemy.engine.url.URL('mysql', username, password, db_host, db_port, db_instance, {'charset': 'utf8'})
+
+    return create_engine(url, pool_size=30, max_overflow=60, pool_recycle=3600, pool_timeout=60, **kwargs)
 
 
 engine = create_db_engine(strategy='threadlocal')
 
 
 def from_db():
-    return DatabaseInterface(engine, is_engine=True)
+    return DatabaseInterface()

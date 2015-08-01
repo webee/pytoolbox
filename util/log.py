@@ -1,10 +1,13 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from __future__ import unicode_literals, print_function
+import os
+
 
 import logging
 
 
-def get_logger(name='main', level=logging.DEBUG):
+def get_logger(name='main', level=None):
+    level = level if level else os.getenv('LOG_LEVEL', 'INFO')
     logger = logging.getLogger(name)
     logger.setLevel(level)
     if len(logger.handlers) > 0:
