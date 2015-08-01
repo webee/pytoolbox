@@ -2,7 +2,7 @@
 import os
 import re
 
-from util.root import project_root
+from ._root import project_root
 
 
 def _parse_file(text):

@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import os
 
 from ._config import CustomizedConfig
-from util.root import project_root
+from ._root import project_root
 
 
 __all__ = ['get', 'config']
