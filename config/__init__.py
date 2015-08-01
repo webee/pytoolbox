@@ -4,13 +4,14 @@ import os
 
 from _config import CustomizedConfig
 from _root import project_root
+from _parser import parse
 
 
 __all__ = ['get']
 
 
 def get(section, option):
-    return _conf.get(section, option)
+    return parse(_conf.get(section, option))
 
 
 class SectionReader(object):
