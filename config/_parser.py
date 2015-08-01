@@ -42,6 +42,13 @@ def _should_parse(text):
     return result is not None
 
 
+class ParserNotFoundError(Exception):
+    def __init__(self, value):
+        message = "Cannot find parser for value[{0}].".format(value)
+        super(ParserNotFoundError, self).__init__(message)
+
+
+
 def parse(text):
     if not _should_parse(text):
         return text
@@ -51,4 +58,4 @@ def parse(text):
         value = do_parsing(text)
         if value:
             return value
-    return None
+    raise ParserNotFoundError(text)
