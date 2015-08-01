@@ -13,6 +13,16 @@ def _parse_file(text):
     return _read_string(file_path)
 
 
+def _parse_os_var(text):
+    var_name = _extract_os_var_name(text)
+    return os.environ[var_name] if var_name else None
+
+
+def _extract_os_var_name(text):
+    m = re.search('^<os:\s*(.+)>$', text)
+    return m.group(1) if m else None
+
+
 def _try_to_extract_file_path(text):
     m = re.search('^<file:\s*(.+)>$', text)
     return m.group(1)
@@ -36,7 +46,7 @@ def parse(text):
     if not _should_parse(text):
         return text
 
-    _parser_chain = [_parse_file]
+    _parser_chain = [_parse_file, _parse_os_var]
     for do_parsing in _parser_chain:
         value = do_parsing(text)
         if value:
