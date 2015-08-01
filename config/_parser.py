@@ -6,7 +6,7 @@ from _root import project_root
 
 
 def _parse_file(text):
-    path = _try_to_extract_file_path(text)
+    path = _extract_file_path(text)
     if not path:
         return None
     file_path = os.path.join(project_root(), path) if _is_relative_path(path) else path
@@ -23,9 +23,9 @@ def _extract_os_var_name(text):
     return m.group(1) if m else None
 
 
-def _try_to_extract_file_path(text):
+def _extract_file_path(text):
     m = re.search('^<file:\s*(.+)>$', text)
-    return m.group(1)
+    return m.group(1) if m else None
 
 
 def _is_relative_path(path):
