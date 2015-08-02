@@ -14,8 +14,8 @@ _logger = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
 
 @contextmanager
 def require_transaction_context():
-    with engine.begin() as conn:
-        yield DatabaseInterface(conn)
+    with engine.begin():
+        yield DatabaseInterface()
 
 
 def transactional(func):
@@ -43,8 +43,7 @@ def db_transactional(func):
 
 @contextmanager
 def require_db_context():
-    with engine.contextual_connect() as conn:
-        yield DatabaseInterface(conn)
+    yield DatabaseInterface()
 
 
 def db_context(func):
@@ -62,14 +61,6 @@ def db_context(func):
 
 
 class DatabaseInterface(object):
-    def __init__(self, conn=None):
-        self.conn = conn
-
-    def __eq__(self, other):
-        if other is None or not isinstance(other, DatabaseInterface):
-            return False
-        return self.conn == other.conn
-
     def sleep(self, duration):
         sql = "select SLEEP(%s)"
         self._execute(sql, (duration,))
@@ -78,11 +69,7 @@ class DatabaseInterface(object):
         return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
 
     def _execute(self, *args, **kwargs):
-        if self.conn is None:
-            with engine.contextual_connect() as conn:
-                return conn.execution_options(autocommit=True).execute(*args, **kwargs)
-        else:
-            return self.conn.execution_options(autocommit=True).execute(*args, **kwargs)
+        return engine.execute(*args, **kwargs)
 
     def executemany(self, sql, seq_of_parameters):
         try:
