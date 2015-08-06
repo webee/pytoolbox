@@ -97,8 +97,8 @@ class DatabaseInterface(object):
     def exists(self, sql, **kwargs):
         return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
 
-    def list(self, sql, **kwargs):
-        return self._query(sql, **kwargs)
+    def list(self, sql, *args, **kwargs):
+        return self._query(sql, *args, **kwargs)
 
     def list_scalar(self, sql, *args, **kwargs):
         rows = self._query(sql, *args, **kwargs)
