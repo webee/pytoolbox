@@ -70,6 +70,8 @@ def load(parent_or_config, name=None, env=DEFAULT_ENV, mapping=None):
 
     _logger.info("use config : [{0}.{1}]".format(config_package.__name__, config_package.__env_name__))
 
+    return config_package
+
 
 def _get_parent_module(mod):
     mname = mod.__name__
