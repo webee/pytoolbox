@@ -6,21 +6,20 @@ from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
-import re
 import textwrap
 import logging
-from .. import config
 
+import re
 
 CHARSET_UTF8 = 'utf-8'
 log = logging.getLogger(__name__)
 
 
-_USER_NAME = config.get('email', 'username')
-_PASSWORD = config.get('email', 'password')
-_SP_ADDRESS = config.get('email', 'sp_address')
-_SP_PORT = config.get('email', 'sp_port')
-_SENDER_ADDR = config.get('email','sender_address')
+_USER_NAME = ''
+_PASSWORD = ''
+_SP_ADDRESS = ''
+_SP_PORT = ''
+_SENDER_ADDR = ''
 
 
 def send_email(sender, recipients, subject, content_html, content_text=None, category=None):
