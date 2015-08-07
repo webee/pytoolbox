@@ -11,10 +11,12 @@ from .. import config
 
 _logger = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
 
+_engine = None
+
 
 @contextmanager
 def require_transaction_context():
-    with engine.begin():
+    with _engine.begin():
         yield DatabaseInterface()
 
 
@@ -69,7 +71,7 @@ class DatabaseInterface(object):
         return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
 
     def _execute(self, *args, **kwargs):
-        return engine.execute(*args, **kwargs)
+        return _engine.execute(*args, **kwargs)
 
     def executemany(self, sql, seq_of_parameters):
         try:
@@ -188,19 +190,12 @@ class DatabaseInterface(object):
         return res.fetchall()
 
 
-def create_db_engine(**kwargs):
-    db_host = config.get('database', 'host')
-    db_port = config.get('database', 'port')
-    db_instance = config.get('database', 'instance')
-    username = config.get('database', 'user')
-    password = config.get('database', 'password')
+def create_db_engine(db_host, db_port, db_instance, username, password):
+    global _engine
     url = sqlalchemy.engine.url.URL('mysql', username, password, db_host, db_port, db_instance, {'charset': 'utf8'})
-
-    return create_engine(url, pool_size=30, max_overflow=60, pool_recycle=3600, pool_timeout=60, **kwargs)
-
-
-engine = create_db_engine(strategy='threadlocal')
+    _engine = create_engine(url, pool_size=30, max_overflow=60, pool_recycle=3600, pool_timeout=60, strategy='threadlocal')
 
 
 def from_db():
     return DatabaseInterface()
+
