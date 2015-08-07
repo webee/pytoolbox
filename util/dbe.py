@@ -1,13 +1,12 @@
 from __future__ import unicode_literals, print_function, division
 
-import os
 from functools import wraps
 from contextlib import contextmanager
+
+import os
 import sqlalchemy
 from sqlalchemy import create_engine
 from log import get_logger
-from .. import config
-
 
 _logger = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
 
