@@ -3,13 +3,13 @@
 Package, module, class based config utils.
 """
 import sys
+import inspect
+
 import os
 import re
-import inspect
 from types import ModuleType, FunctionType
-
+from . import project_root
 from ..util.log import get_logger
-
 
 _logger = get_logger(__name__)
 
@@ -71,6 +71,13 @@ def load(parent_or_config, name=None, env=DEFAULT_ENV, mapping=None):
     _logger.info("use config : [{0}.{1}]".format(config_package.__name__, config_package.__env_name__))
 
     return config_package
+
+
+def read_file(filepath, root=project_root()):
+    from os import path
+
+    with open(path.join(root, filepath)) as fin:
+        return fin.read().strip('\n')
 
 
 def _get_parent_module(mod):

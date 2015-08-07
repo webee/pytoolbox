@@ -1,16 +1,29 @@
 # coding=utf-8
+import os
+from os.path import dirname, abspath, isdir
 
 
-def load(config_package, env):
-    from config_loader import load as _load
-    return _load(config_package, env=env)
-
-
-def read_file(filepath):
-    from reader import read_file as _read_file
-    return _read_file(filepath)
+__all__ = ['project_root']
 
 
 def project_root():
-    from _root import project_root as _project_root
-    return _project_root()
+    src_path = _find_src_dir(__file__)
+    return os.getenv('PROJ_ROOT', abspath(dirname(src_path)))
+
+
+def _find_src_dir(filepath):
+    dir_path = dirname(filepath)
+    if dir_path == '/':
+        raise OSError("Cannot find 'src' folder.")
+
+    if isdir(dir_path) and _folder_name(dir_path) == 'src':
+        return dir_path
+
+    return _find_src_dir(dir_path)
+
+
+def _folder_name(dir_path):
+    index = dir_path.rfind('/')
+    if index < 0:
+        return ''
+    return dir_path[index + 1:]
