@@ -20,7 +20,7 @@ _envs_mapping = {
     'production': 'prod'
 }
 
-_ENV_VAR_NAME = 'ENV'
+ENV_VAR_NAME = 'ENV'
 DEFAULT_ENV = 'default'
 
 CAMEL_NAMING_PATTERN = re.compile(r'([A-Z][a-z]*)+')
@@ -56,7 +56,7 @@ def load(parent_or_config, name=None, env=DEFAULT_ENV, mapping=None):
             _register_config(config_package, config_mod)
             setattr(config_package, '__env_name__', env_name)
         else:
-            _logger.warn("config not found: [{0}.{1}]".format(config_package.__name__, env_name))
+            _logger.warn("config not found: [{0}.{1}]".format(name, env_name))
         _safe_del_attr(config_package, env_name)
     # remove none-config vars.
     _remove_none_config_vars(config_package)
@@ -94,8 +94,7 @@ def _get_package_mod(pack, name):
     try:
         return __import__('{0}.{1}'.format(pack.__name__, name), fromlist=[pack.__name__])
     except Exception as e:
-        _logger.error('{0}.{1}: {2}'.format(pack.__name__, name, e.message))
-        raise e
+        _logger.warn('{0}, {1}'.format(e.message, pack.__name__))
 
 
 def _is_camel_name(name):
@@ -187,9 +186,9 @@ def _safe_del_attr(mod, name):
         delattr(mod, name)
 
 
-def _get_env_name(name=_ENV_VAR_NAME, mapping=None, env=None):
+def _get_env_name(name=ENV_VAR_NAME, mapping=None, env=None):
     if env is None:
-        env = os.getenv(_ENV_VAR_NAME, DEFAULT_ENV)
+        env = os.getenv(ENV_VAR_NAME, DEFAULT_ENV)
         if name is not None:
             env = os.getenv('{0}_ENV'.format(name.upper()), env)
         env = _envs_mapping.get(env, env)

@@ -197,4 +197,3 @@ def create_db_engine(db_host, db_port, db_instance, username, password):
 
 def from_db():
     return DatabaseInterface()
-
