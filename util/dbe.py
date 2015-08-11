@@ -190,6 +190,7 @@ class DatabaseInterface(object):
 
 
 def create_db_engine(db_host, db_port, db_instance, username, password):
+    _logger.info('connecting to database {}@{}:{}'.format(db_instance, db_host, db_port))
     global _engine
     url = sqlalchemy.engine.url.URL('mysql', username, password, db_host, db_port, db_instance, {'charset': 'utf8'})
     _engine = create_engine(url, pool_size=30, max_overflow=60, pool_recycle=3600, pool_timeout=60, strategy='threadlocal')
