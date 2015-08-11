@@ -56,7 +56,7 @@ def load(parent_or_config, name=None, env=DEFAULT_ENV, mapping=None):
             _register_config(config_package, config_mod)
             setattr(config_package, '__env_name__', env_name)
         else:
-            _logger.warn("config not found: [{0}.{1}]".format(name, env_name))
+            _logger.warn("config not found: [{0}.{1}]".format(config_package.__name__, env_name))
         _safe_del_attr(config_package, env_name)
     # remove none-config vars.
     _remove_none_config_vars(config_package)
@@ -94,7 +94,8 @@ def _get_package_mod(pack, name):
     try:
         return __import__('{0}.{1}'.format(pack.__name__, name), fromlist=[pack.__name__])
     except Exception as e:
-        _logger.warn('{0}, {1}'.format(e.message, pack.__name__))
+        _logger.error('{0}.{1}: {2}'.format(pack.__name__, name, e.message))
+        raise e
 
 
 def _is_camel_name(name):
