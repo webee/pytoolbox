@@ -23,7 +23,7 @@ _envs_mapping = {
 ENV_VAR_NAME = 'ENV'
 DEFAULT_ENV = 'default'
 
-CAMEL_NAMING_PATTERN = re.compile(r'([A-Z][a-z]*)+')
+CAMEL_NAMING_PATTERN = re.compile(r'([A-Z][a-z]*)*([A-Z][a-z]+)+([A-Z][a-z]*)*')
 
 
 def load(parent_or_config, name=None, env=DEFAULT_ENV, mapping=None):
@@ -200,17 +200,6 @@ def _get_env_name(name=ENV_VAR_NAME, mapping=None, env=None):
         if env in vs:
             return key
     return env
-
-
-def get_project_root():
-    from os.path import dirname, abspath
-    return os.getenv('PROJ_ROOT', abspath(dirname((dirname(dirname(__file__))))))
-
-
-def read_string(filepath, root=get_project_root()):
-    from os import path
-    with open(path.join(root, filepath)) as fin:
-        return fin.read().strip('\n')
 
 
 def _merge_data(target_mod, x, v):
