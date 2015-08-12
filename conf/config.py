@@ -115,14 +115,16 @@ def _get_value(m, n):
 
 
 def _is_valid_config_member(mod, n):
-    """ there are three types of config vars, Class, Module and None-[Class&Module].
+    """ config items can be Camel Named [Class, Module, dict] and other upper case named data types.
     :param mod: where var n in.
     :param n: var name.
     :return:
     """
     v = _get_value(mod, n)
-    if _is_class(v) or isinstance(v, (ModuleType, dict)):
+    if _is_class(v):
         return _is_camel_name(n)
+    elif _is_camel_name(n):
+        return isinstance(v, (ModuleType, dict))
     elif isinstance(v, FunctionType):
         return False
     return n[0].isalpha() and n.isupper()
