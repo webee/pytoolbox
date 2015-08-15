@@ -3,7 +3,7 @@
 from __future__ import unicode_literals, print_function, division
 import glob
 import os
-from ..util.dbe import from_db
+from ..util.dbs import from_db
 
 MIGRATION_RECORD_TABLE = 'migrate_command_center'
 
