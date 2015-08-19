@@ -21,6 +21,7 @@ def init_db(app):
 def require_transaction_context():
     with _db.session.begin(subtransactions=True):
         yield DatabaseInterface()
+        _db.session.flush()
 
 
 def transactional(func):
