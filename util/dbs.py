@@ -10,18 +10,18 @@ from log import get_logger
 _logger = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
 
 
-_db = SQLAlchemy(session_options={'autocommit': True})
+db = SQLAlchemy(session_options={'autocommit': True})
 
 
 def init_db(app):
-    _db.init_app(app)
+    db.init_app(app)
 
 
 @contextmanager
 def require_transaction_context():
-    with _db.session.begin(subtransactions=True):
+    with db.session.begin(subtransactions=True):
         yield DatabaseInterface()
-        _db.session.flush()
+        db.session.flush()
 
 
 def transactional(func):
@@ -82,7 +82,7 @@ class DatabaseInterface(object):
         return self.get_scalar('SELECT EXISTS ({})'.format(sql), **kwargs)
 
     def _execute(self, sql, *args, **kwargs):
-        return _db.session.execute(_pyformat_to_named_paramstyle(sql), *args, **kwargs)
+        return db.session.execute(_pyformat_to_named_paramstyle(sql), *args, **kwargs)
 
     def executemany(self, sql, seq_of_parameters):
         try:
