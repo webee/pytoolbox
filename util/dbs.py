@@ -49,7 +49,8 @@ def db_transactional(func):
 
 @contextmanager
 def require_db_context():
-    yield DatabaseInterface()
+    with require_transaction_context():
+        yield DatabaseInterface()
 
 
 def db_context(func):
@@ -74,6 +75,10 @@ def _pyformat_to_named_paramstyle(sql):
 
 
 class DatabaseInterface(object):
+    @property
+    def session(self):
+        return db.session
+
     def sleep(self, duration):
         sql = "select SLEEP(%s)"
         self._execute(sql, (duration,))
