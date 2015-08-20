@@ -11,16 +11,21 @@ _logger = get_logger(__name__, level=os.getenv('LOG_LEVEL', 'INFO'))
 
 
 db = SQLAlchemy(session_options={'autocommit': True})
+__inited__ = False
 
 
 def init_db(app):
+    global __inited__
+
     db.init_app(app)
+
+    __inited__ = True
 
 
 @contextmanager
 def require_transaction_context():
     with db.session.begin(subtransactions=True):
-        yield DatabaseInterface()
+        yield from_db()
         db.session.flush()
 
 
@@ -39,7 +44,7 @@ def db_transactional(func):
         if '_db' in kwargs:
             db = kwargs.pop('_db')
             return func(db, *args, **kwargs)
-        if len(args) > 1 and isinstance(args[0], DatabaseInterface):
+        if len(args) > 1 and isinstance(args[0], _DatabaseInterface):
             return func(*args, **kwargs)
         with require_transaction_context() as db:
             return func(db, *args, **kwargs)
@@ -50,7 +55,7 @@ def db_transactional(func):
 @contextmanager
 def require_db_context():
     with require_transaction_context():
-        yield DatabaseInterface()
+        yield from_db()
 
 
 def db_context(func):
@@ -59,7 +64,7 @@ def db_context(func):
         if '_db' in kwargs:
             db = kwargs.pop('_db')
             return func(db, *args, **kwargs)
-        if len(args) > 1 and isinstance(args[0], DatabaseInterface):
+        if len(args) > 1 and isinstance(args[0], _DatabaseInterface):
             return func(*args, **kwargs)
         with require_db_context() as db:
             return func(db, *args, **kwargs)
@@ -74,7 +79,7 @@ def _pyformat_to_named_paramstyle(sql):
     return PY_FORMAT_PATTERN.sub(r':\2', sql)
 
 
-class DatabaseInterface(object):
+class _DatabaseInterface(object):
     @property
     def session(self):
         return db.session
@@ -205,4 +210,6 @@ class DatabaseInterface(object):
 
 
 def from_db():
-    return DatabaseInterface()
+    if not __inited__:
+        raise NotImplementedError('not initialized')
+    return _DatabaseInterface()
