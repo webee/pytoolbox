@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
 import sys
-from os.path import dirname, basename
+from os.path import dirname, basename, abspath
 
 
 class RootNotFoundError(Exception):
@@ -11,7 +11,7 @@ class RootNotFoundError(Exception):
 
 
 def root_path(name):
-    exec_path = sys.argv[0]
+    exec_path = abspath(sys.argv[0])
     dir_path = dirname(exec_path)
 
     while _folder_name(dir_path) != name and dir_path != '/':
