@@ -218,12 +218,12 @@ def _get_env_name(name=ENV_VAR_NAME, mapping=None, env=None):
 __project_root = None
 
 
-def get_project_root():
+def get_project_root(from_path=None):
     from os.path import dirname
     global __project_root
 
     if __project_root is None:
-        src_path = _find_dir_path(__file__, 'src')
+        src_path = _find_dir_path(from_path or __file__, 'src')
         __project_root = os.getenv('PROJ_ROOT', dirname(src_path))
 
     return __project_root
