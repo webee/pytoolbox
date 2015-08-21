@@ -223,7 +223,7 @@ def get_project_root():
     global __project_root
 
     if __project_root is None:
-        src_path = _find_dir_path(__file__)
+        src_path = _find_dir_path(__file__, 'src')
         __project_root = os.getenv('PROJ_ROOT', dirname(src_path))
 
     return __project_root
