@@ -23,7 +23,9 @@ class Signer(object):
         self.pri_key = pri_key
         self.pub_key = pub_key
 
-    def init(self, md5_key, pri_key, pub_key):
+    def init(self, md5_key_param_name, sign_key_name, md5_key, pri_key, pub_key):
+        self.md5_key_param_name = md5_key_param_name
+        self.sign_key_name = sign_key_name
         self.md5_key = md5_key
         self.pri_key = pri_key
         self.pub_key = pub_key
