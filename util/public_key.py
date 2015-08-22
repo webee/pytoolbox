@@ -31,6 +31,12 @@ class Key(object):
         """
         return self._key.exportKey(format, pkcs=pkcs)
 
+    def b64encoded_binary_key_data(self):
+        """对于private key生成PKCS#8 DER SEQUENCE
+        对于public key生成X.509 DER SEQUENCE
+        """
+        return self.key_data(format='DER', pkcs=8)
+
     def export(self, fout):
         """导出key_data到fout
         :param fout:
@@ -93,9 +99,17 @@ def generate_key(bits=2048):
     return Key(RSA.generate(bits, rng))
 
 
-def load_key(private_key_path):
-    return Key(RSA.importKey(open(private_key_path).read()))
+def load_key(key_path):
+    return Key(RSA.importKey(open(key_path).read()))
 
 
 def loads_key(key_data):
     return Key(RSA.importKey(key_data))
+
+
+def load_b64encoded_key(key_path):
+    return Key(RSA.importKey(base64.b64decode(open(key_path).read())))
+
+
+def loads_b64encoded_key(encoded_key_data):
+    return loads_key(base64.b64decode(encoded_key_data))
