@@ -6,6 +6,7 @@ from Crypto.Hash import SHA, MD5
 from Crypto.Cipher import PKCS1_OAEP
 import base64
 
+
 class Key(object):
     def __init__(self, rsa_key):
         self._key = rsa_key
@@ -35,7 +36,7 @@ class Key(object):
         """对于private key生成PKCS#8 DER SEQUENCE
         对于public key生成X.509 DER SEQUENCE
         """
-        return self.key_data(format='DER', pkcs=8)
+        return base64.b64encode(self.key_data(format='DER', pkcs=8))
 
     def export(self, fout):
         """导出key_data到fout
@@ -63,33 +64,41 @@ class Key(object):
         return self.verify_sha(data, base64.b64decode(signature))
 
     def sign_md5(self, data):
+        """对数据先进行md5 hash，再用私钥签名"""
         h = MD5.new()
         h.update(data)
 
         return self._signer.sign(h)
 
     def sign_md5_to_base64(self, data):
+        """对数据先进行md5 hash，再用私钥签名, 并用base64编码结果"""
         return base64.b64encode(self.sign_md5(data))
 
     def verify_md5(self, data, signature):
+        """用公钥验签"""
         h = MD5.new()
         h.update(data)
 
         return self._signer.verify(h, signature)
 
     def verify_md5_from_base64(self, data, signature):
+        """用公钥验签进base64编码的签名"""
         return self.verify_md5(data, base64.b64decode(signature))
 
     def encrypt(self, data):
+        """使用公钥加密数据"""
         return self._cipher.encrypt(data)
 
     def encrypt_to_base64(self, data):
+        """使用公钥加密数据并用base64编码结果"""
         return base64.b64encode(self.encrypt(data))
 
     def decrypt(self, ciphertext):
+        """使用私钥解密密文"""
         return self._cipher.decrypt(ciphertext)
 
     def decrypt_from_base64(self, ciphertext):
+        """使用私钥解密经base64编码的密文"""
         return self._cipher.decrypt(base64.b64decode(ciphertext))
 
 
