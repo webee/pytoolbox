@@ -16,7 +16,9 @@ class SignType:
 
 
 class Signer(object):
-    def __init__(self, md5_key=None, pri_key=None, pub_key=None):
+    def __init__(self, md5_key_param_name='key', sign_key_name='sign', md5_key=None, pri_key=None, pub_key=None):
+        self.md5_key_param_name = md5_key_param_name
+        self.sign_key_name = sign_key_name
         self.md5_key = md5_key
         self.pri_key = pri_key
         self.pub_key = pub_key
@@ -27,55 +29,63 @@ class Signer(object):
         self.pub_key = pub_key
 
     def md5_sign(self, data):
-        return _sign_md5_data(data, self.md5_key)
+        return self._sign_md5_data(data)
 
     def rsa_sign(self, data):
-        return _sign_rsa_data(data, self.pri_key)
+        return self._sign_rsa_data(data)
 
     def sign(self, data, sign_type):
         if sign_type == SignType.MD5:
-            return _sign_md5_data(data, self.md5_key)
+            return self._sign_md5_data(data)
         elif sign_type == SignType.RSA:
-            return _sign_rsa_data(data, self.pri_key)
+            return self._sign_rsa_data(data)
         raise UnknownSignTypeError(sign_type)
 
     def verify(self, data, sign_type):
         if sign_type == SignType.MD5:
-            return _verify_md5_data(data, self.md5_key)
+            return self._verify_md5_data(data, self.md5_key)
         elif sign_type == SignType.RSA:
-            return _verify_rsa_data(data, self.pub_key)
+            return self._verify_rsa_data(data)
         raise UnknownSignTypeError(sign_type)
 
+    def _sign_md5_data(self, data):
+        src = self._gen_sign_data(data)
+        return _sign_md5(src, self.md5_key, self.md5_key_param_name)
 
-def _gen_sign_data(data):
-    keys = data.keys()
-    keys.sort(key=lambda x: x.lower())
+    def _verify_md5_data(self, data, key):
+        signed = data.get(self.sign_key_name)
+        src = self._gen_sign_data(data)
 
-    values = ['%s=%s' % (k, data[k]) for k in keys if k and k != 'sign' and data[k]]
+        return _verify_md5(src, key, signed, self.md5_key_param_name)
 
-    return '&'.join(values)
+    def _sign_rsa_data(self, data):
+        src = self._gen_sign_data(data)
+
+        return _sign_rsa(src, self.pri_key)
+
+    def _verify_rsa_data(self, data):
+        signed = data.get(self.sign_key_name)
+        src = self._gen_sign_data(data)
+
+        return _verify_rsa(src, self.pub_key, signed)
+
+    def _gen_sign_data(self, data):
+        keys = data.keys()
+        keys.sort(key=lambda x: x.lower())
+
+        values = ['%s=%s' % (k, data[k]) for k in keys if k and k != self.sign_key_name and data[k]]
+
+        return '&'.join(values)
 
 
-def _sign_md5(src, key):
-    src = src + '&key=' + key
+def _sign_md5(src, key, key_param_name):
+    src = src + '&{0}={1}'.format(key_param_name, key)
     src = src.encode('utf-8')
     return md5(src).hexdigest()
 
 
-def _sign_md5_data(data, key):
-    src = _gen_sign_data(data)
-    return _sign_md5(src, key)
-
-
-def _verify_md5(src, key, signed):
-    return signed == _sign_md5(src, key)
-
-
-def _verify_md5_data(data, key):
-    signed = data.get('sign')
-    src = _gen_sign_data(data)
-
-    return _verify_md5(src, key, signed)
+def _verify_md5(src, key, signed, key_param_name):
+    return signed == _sign_md5(src, key, key_param_name)
 
 
 def _sign_rsa(src, pri_key):
@@ -89,12 +99,6 @@ def _sign_rsa(src, pri_key):
     return key.sign_md5_to_base64(src)
 
 
-def _sign_rsa_data(data, pri_key):
-    src = _gen_sign_data(data)
-
-    return _sign_rsa(src, pri_key)
-
-
 def _verify_rsa(src, pub_key, signed):
     """ 公钥验签
     :param src: 数据字符串
@@ -103,10 +107,3 @@ def _verify_rsa(src, pub_key, signed):
     """
     key = public_key.loads_b64encoded_key(pub_key)
     return key.verify_md5_from_base64(src.encode('utf-8'), signed)
-
-
-def _verify_rsa_data(data, pub_key):
-    signed = data.get('sign')
-    src = _gen_sign_data(data)
-
-    return _verify_rsa(src, pub_key, signed)
