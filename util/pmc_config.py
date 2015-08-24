@@ -144,6 +144,11 @@ def _is_class(v):
     return isinstance(v, ClassType)
 
 
+def merge_config(target_config, src_config):
+    _register_config(target_config, src_config)
+    return target_config
+
+
 def _register_config(config_package, config_mod):
     """ merge config vars from config_mod to config_package.
     :param config_package:
