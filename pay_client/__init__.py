@@ -4,11 +4,11 @@ from decimal import Decimal
 
 import os
 import requests
-from pytoolbox.util.sign import SignType, Signer
-from pytoolbox.util import pmc_config
-from pytoolbox.util.log import get_logger
-from pytoolbox.pay_client.config import Config
-from tools.urls import build_url
+from util.sign import SignType, Signer
+from util import pmc_config
+from util.log import get_logger
+from pay_client.config import Config
+from util.urls import build_url
 
 
 logger = get_logger(__name__)
@@ -135,6 +135,16 @@ class PayClient(object):
         url = self._generate_api_url(self.config.QUERY_BIN_URL, card_no=card_no)
 
         return self.request(url, method='get')
+
+    def query_user_is_opened(self, user_id):
+        params = {
+            'user_domain_name': self.config.USER_DOMAIN_NAME,
+            'user_id': user_id
+        }
+
+        url = self._generate_api_url(self.config.QUERY_USER_IS_OPENED_URL, **params)
+
+        return self.request(url, params, method='get')
 
     def query_transactions(self, uid, role, page_no, page_size, q):
         account_user_id = self.get_account_user_id(uid)

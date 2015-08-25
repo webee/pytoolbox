@@ -23,3 +23,5 @@ class Config:
 
     GET_USER_TRANSACTIONS_URL = "biz/account_users/{account_user_id}/transactions"
     QUERY_BIN_URL = 'application/bankcard/{card_no}/bin'
+
+    QUERY_USER_IS_OPENED_URL = "/user_mapping/user_domains/{user_domain_name}/users/{user_id}/is_opened"
