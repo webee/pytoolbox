@@ -4,11 +4,11 @@ from decimal import Decimal
 
 import os
 import requests
-from util.sign import SignType, Signer
-from util import pmc_config
-from util.log import get_logger
-from pay_client.config import Config
-from util.urls import build_url
+from ..util.sign import SignType, Signer
+from ..util import pmc_config
+from ..util.log import get_logger
+from ..util.urls import build_url
+from .config import Config
 
 
 logger = get_logger(__name__)
@@ -68,6 +68,9 @@ class PayClient(object):
 
         req = requests.request(method, url, data=params)
         try:
+            if req.status_code != 200:
+                logger.warn('bad request result: [{0}]'.format(req.text))
+                return None
             data = req.json()
             if self.verify(data):
                 return data
