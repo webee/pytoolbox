@@ -11,11 +11,12 @@ class Config:
     CHANNEL_NAME = 'zyt_sample'
 
     ROOT_URL = "http://pay.lvye.com/api/__"
-    PREPAID_URL = '/biz/prepaid'
+    QUERY_USER_IS_OPENED_URL = "/user_mapping/user_domains/{user_domain_name}/users/{user_id}/is_opened"
     PREPAY_URL = '/biz/prepay'
     CONFIRM_GUARANTEE_PAYMENT_URL = '/biz/pay/guarantee_payment/confirm'
     REFUND_URL = '/biz/refund'
     WITHDRAW_URL = '/application/account_users/{account_user_id}/withdraw'
+    PREPAID_URL = '/biz/prepaid'
 
     GET_CREATE_ACCOUNT_ID_URL = '/user_mapping/user_domains/{user_domain_name}/users/{user_id}'
     GET_USER_BALANCE_URL = "/vas/zyt/account_users/{account_user_id}/balance"
@@ -23,5 +24,3 @@ class Config:
 
     GET_USER_TRANSACTIONS_URL = "biz/account_users/{account_user_id}/transactions"
     QUERY_BIN_URL = 'application/bankcard/{card_no}/bin'
-
-    QUERY_USER_IS_OPENED_URL = "/user_mapping/user_domains/{user_domain_name}/users/{user_id}/is_opened"

@@ -25,16 +25,6 @@ class PayClient(object):
         pmc_config.merge_config(self.config, env_config)
         self.signer.init(self.config.MD5_KEY, self.config.CHANNEL_PRI_KEY, self.config.LVYE_PUB_KEY)
 
-    def verify(self, data, do_not_check=True):
-        if do_not_check:
-            return True
-        sing_type = data.get('sign_type')
-        channel_name = data.get('channel_name')
-        if channel_name != self.config.CHANNEL_NAME:
-            return False
-
-        return self.signer.verify(data, sing_type)
-
     def verify_request(self, f):
         from flask import request
 
@@ -66,17 +56,18 @@ class PayClient(object):
         params['channel_name'] = self.config.CHANNEL_NAME
         params['sign'] = self.signer.sign(params, sign_type)
 
-        req = requests.request(method, url, data=params)
         try:
-            if req.status_code != 200:
-                logger.warn('bad request result: [{0}]'.format(req.text))
-                return None
-            data = req.json()
-            if self.verify(data):
-                return data
+            req = requests.request(method, url, data=params)
+            try:
+                if req.status_code != 200:
+                    logger.warn('bad request result: [{0}]'.format(req.text))
+                    return None
+                return req.json()
+            except Exception as e:
+                logger.exception(e)
+                logger.warn('bad request: {0}, {1}'.format(req.status_code, req.text))
         except Exception as e:
             logger.exception(e)
-            logger.warn('bad request: {0}, {1}'.format(req.status_code, req.text))
         return None
 
     def _generate_api_url(self, url, **kwargs):
