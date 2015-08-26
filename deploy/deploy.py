@@ -38,7 +38,7 @@ class Deployment(object):
     def _default_context(self, user):
         return {
             'server_name': self._server_name,
-            'site_name': self._site_name(),
+            'site_name': self._site_name,
             'project_dir': self._project_dir,
             'user': user
         }
