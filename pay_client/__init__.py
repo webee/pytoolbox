@@ -100,7 +100,14 @@ class PayClient(object):
         url = self._generate_api_url(self.config.PREPAY_URL)
         return self.request(url, params)
 
-    def refund(self, params):
+    def refund(self, order_id=None, amount=None, notify_url=None, params=None):
+        if params is None:
+            params = {
+                'order_id': order_id,
+                'amount': amount,
+                'notify_url': notify_url
+            }
+
         url = self._generate_api_url(self.config.REFUND_URL)
         return self.request(url, params)
 
@@ -109,7 +116,11 @@ class PayClient(object):
         url = self._generate_api_url(self.config.WITHDRAW_URL, account_user_id=account_user_id)
         return self.request(url, params)
 
-    def confirm_guarantee_payment(self, params):
+    def confirm_guarantee_payment(self, order_id):
+        params = {
+            'order_id': order_id
+        }
+
         url = self._generate_api_url(self.config.CONFIRM_GUARANTEE_PAYMENT_URL)
         return self.request(url, params)
 
