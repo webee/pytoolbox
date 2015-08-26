@@ -8,12 +8,14 @@ from util.root import root_path
 
 
 class Deployment(object):
-    def __init__(self, git_repo, project_dir, server_name, site_name, supervisord_config_path, context, supervisord_remote_dir):
+    def __init__(self, git_repo, project_dir, server_name, site_name, supervisord_config_path, supervisord_remote_dir,
+                 context=None):
         self._git_repo = git_repo
         self._project_dir = project_dir
         self._server_name = server_name
         self._site_name = site_name
-        self._supervisord = AttrDict(config_path=supervisord_config_path, context=context,
+        self._supervisord = AttrDict(config_path=supervisord_config_path,
+                                     context=context if context else {},
                                      remote_dir=supervisord_remote_dir)
 
     def do(self, server_host, user, pip_install=False, bower_install=False, db_migration=False):
