@@ -66,7 +66,8 @@ class Deployment(object):
             fab.run('git pull --ff-only origin master')
 
     def _update_supervisord_config(self, default_context):
-        context = default_context.update(self._supervisord.context)
+        context = default_context.copy()
+        context.update(self._supervisord.context)
         self._upload_supervisord_conf(self._supervisord.config_path, context)
 
         fab.run('sudo /usr/local/bin/supervisorctl reread')
