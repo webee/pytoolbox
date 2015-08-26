@@ -3,8 +3,8 @@ from __future__ import unicode_literals, print_function, division
 from fabric import api as fab
 from fabric.contrib.files import exists, upload_template
 from os import path, environ
-from util.attr_dict import AttrDict
-from util.root import root_path
+from ..util.attr_dict import AttrDict
+from ..util.root import root_path
 
 
 class Deployment(object):
