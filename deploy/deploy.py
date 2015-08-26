@@ -22,7 +22,7 @@ class Deployment(object):
         fab.env.user = user
 
         self._update_codes()
-        self._update_supervisord_config()
+        self._update_supervisord_config(self._default_context())
 
         self._stop_api_server(self._server_name)
         if pip_install:
@@ -32,6 +32,13 @@ class Deployment(object):
         if db_migration:
             self._migrate_db()
         self._start_api_server(self._server_name)
+
+    def _default_context(self, user):
+        return {
+            'server_name': self._server_name,
+            'site_name': self._site_name,
+            'user': user
+        }
 
     def _update_codes(self):
         repo_dir = self._project_dir
@@ -55,19 +62,21 @@ class Deployment(object):
         with fab.cd(path.join(base_dir, 'libraries/pytoolbox')):
             fab.run('git pull --ff-only origin master')
 
-    def _update_supervisord_config(self):
-        self._upload_supervisord_conf(self._supervisord.config_path)
+    def _update_supervisord_config(self, default_context):
+        context = default_context.update(self._supervisord.context)
+        self._upload_supervisord_conf(self._supervisord.config_path, context)
+
         fab.run('sudo /usr/local/bin/supervisorctl reread')
         fab.run('sudo /usr/local/bin/supervisorctl update')
 
-    def _upload_supervisord_conf(self, template_relative_path):
+    def _upload_supervisord_conf(self, template_relative_path, context):
         root = root_path(self._site_name)
         template_file_path = path.join(root, template_relative_path)
         template_file_name = path.basename(template_file_path)
         template_dir = path.dirname(template_file_path)
         remote_path = '{0}/{1}.conf'.format(self._supervisord.remote_dir, self._server_name)
 
-        upload_template(template_file_name, remote_path, context=self._supervisord.context, use_jinja=True, template_dir=template_dir,
+        upload_template(template_file_name, remote_path, context=context, use_jinja=True, template_dir=template_dir,
                         use_sudo=True, backup=False)
 
     def _stop_api_server(self, name):
