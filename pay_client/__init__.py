@@ -57,6 +57,7 @@ class PayClient(object):
         params['sign'] = self.signer.sign(params, sign_type)
 
         try:
+            logger.info("request: {0}, {1}, {2}".format(method, url, params))
             req = requests.request(method, url, data=params)
             try:
                 if req.status_code != 200:
@@ -73,7 +74,6 @@ class PayClient(object):
     def _generate_api_url(self, url, **kwargs):
         url = url.lstrip('/')
         url = os.path.join(self.config.ROOT_URL, url.format(**kwargs))
-        logger.info("request url %s" % url)
         return url
 
     def get_account_user_id(self, user_id, user_domain_name=None):

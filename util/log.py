@@ -7,9 +7,10 @@ import logging
 
 
 def get_logger(name='main', level=None):
-    level = level if level else os.getenv('LOG_LEVEL', 'INFO')
+    level = level if level else os.getenv('LOG_LEVEL', logging.INFO)
     logger = logging.getLogger(name)
     logger.setLevel(level)
+    logger.propagate = False
     if len(logger.handlers) > 0:
         return logger
 
