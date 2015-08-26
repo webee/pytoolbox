@@ -24,7 +24,7 @@ class Deployment(object):
         fab.env.user = user
 
         self._update_codes()
-        self._update_supervisord_config(self._default_context())
+        self._update_supervisord_config(self._default_context(user))
 
         self._stop_api_server(self._server_name)
         if pip_install:
