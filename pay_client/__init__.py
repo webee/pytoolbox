@@ -31,7 +31,9 @@ class PayClient(object):
         @wraps(f)
         def wrapper(*args, **kwargs):
             try:
-                data = request.values
+                data = {}
+                data.update(request.values.items())
+                data.update(request.view_args)
                 # check perm
                 channel_name = data.get('channel_name')
                 if channel_name != self.config.CHANNEL_NAME:
@@ -45,6 +47,7 @@ class PayClient(object):
                 is_verify_pass = False
 
             request.__dict__['is_verify_pass'] = is_verify_pass
+            request.__dict__['params'] = data
             return f(*args, **kwargs)
         return wrapper
 
@@ -57,7 +60,6 @@ class PayClient(object):
         params['sign'] = self.signer.sign(params, sign_type)
 
         try:
-            logger.info("request: {0}, {1}, {2}".format(method, url, params))
             req = requests.request(method, url, data=params)
             try:
                 if req.status_code != 200:
@@ -74,6 +76,7 @@ class PayClient(object):
     def _generate_api_url(self, url, **kwargs):
         url = url.lstrip('/')
         url = os.path.join(self.config.ROOT_URL, url.format(**kwargs))
+        logger.info("request url %s" % url)
         return url
 
     def get_account_user_id(self, user_id, user_domain_name=None):
