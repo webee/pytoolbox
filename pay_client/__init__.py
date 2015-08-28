@@ -47,7 +47,8 @@ class PayClient(object):
                 data = {}
                 data.update(request.values.items())
                 data.update(request.view_args)
-                # check perm
+                logger.info('receive request [0] [0]: [{1}]'.format(request.method, request.url, data))
+                # check channel
                 channel_name = data.get('channel_name')
                 if channel_name != self.config.CHANNEL_NAME:
                     is_verify_pass = False
@@ -157,13 +158,16 @@ class PayClient(object):
             return result.data['pay_url']
         return None
 
-    def confirm_guarantee_payment(self, order_id):
+    def confirm_guarantee_payment(self, order_id, ret_result=False):
         params = {
             'order_id': order_id
         }
 
         url = self._generate_api_url(self.config.CONFIRM_GUARANTEE_PAYMENT_URL)
         result = self.post_req(url, params)
+
+        if ret_result:
+            return result
 
         return _is_success_result(result)
 
@@ -186,7 +190,7 @@ class PayClient(object):
             return result.data['sn']
         return None
 
-    def withdraw(self, user_id, bankcard_id=None, amount=None, notify_url=None, params=None, ret_result=False):
+    def app_withdraw(self, user_id, bankcard_id=None, amount=None, notify_url=None, params=None, ret_result=False):
         if params is None:
             params = {
                 'bankcard_id': bankcard_id,
@@ -195,10 +199,25 @@ class PayClient(object):
             }
         else:
             params = dict(params)
-        account_user_id = self.get_account_user_id(user_id)
+        account_user_id = self.get_account_user(user_id)
         params['from_user_id'] = account_user_id
 
         url = self._generate_api_url(self.config.WITHDRAW_URL)
+        result = self.post_req(url, params)
+        if ret_result:
+            return result
+
+        if _is_success_result(result):
+            return result.data['sn']
+        return None
+
+    def app_withdraw(self, user_id, params, ret_result=False):
+        params = dict(params)
+
+        account_user_id = self.get_account_user(user_id)
+        params['from_user_id'] = account_user_id
+
+        url = self._generate_api_url(self.config.APP_WITHDRAW_URL)
         result = self.post_req(url, params)
         if ret_result:
             return result
