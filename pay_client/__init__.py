@@ -83,7 +83,7 @@ class PayClient(object):
             try:
                 if req.status_code != 200:
                     logger.warn('failed request result: [{0}], [{1}]'.format(req.status_code, req.text))
-                logger.info('request result: [{0}], [{1}]'.format(req.status_code, req.text))
+                logger.debug('request result: [{0}], [{1}]'.format(req.status_code, req.text))
                 return Result(req.status_code, req.json())
             except Exception as e:
                 logger.exception(e)
@@ -253,7 +253,7 @@ class PayClient(object):
         return None
 
     def query_transactions(self, uid, role, page_no, page_size, q):
-        account_user_id = self.get_account_user_id(uid)
+        account_user_id = self.get_account_user(uid)
         if account_user_id is None:
             return None
 
