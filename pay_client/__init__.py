@@ -182,7 +182,7 @@ class PayClient(object):
             return result
 
         if _is_success_result(result):
-            return result.data['sn']
+            return result.data
         return None
 
     def list_transactions(self, user_id, role, page_no, page_size, q):
@@ -268,7 +268,7 @@ class PayClient(object):
             return result
 
         if _is_success_result(result):
-            return result.data['sn']
+            return result.data
         return None
 
     def app_query_user_balance(self, user_id):
