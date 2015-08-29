@@ -50,7 +50,7 @@ class PayClient(object):
                 data = {}
                 data.update(request.values.items())
                 data.update(request.view_args)
-                logger.info('receive request [0] [0]: [{1}]'.format(request.method, request.url, data))
+                logger.info('receive request [{0}] [{1}]: [{2}]'.format(request.method, request.url, data))
                 # check channel
                 channel_name = data.get('channel_name')
                 if channel_name != self.config.CHANNEL_NAME:
