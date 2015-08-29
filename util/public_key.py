@@ -2,7 +2,7 @@
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA, MD5
+from Crypto.Hash import SHA, MD5, SHA256
 from Crypto.Cipher import PKCS1_OAEP
 import base64
 
@@ -11,7 +11,7 @@ class Key(object):
     def __init__(self, rsa_key):
         self._key = rsa_key
         self._signer = PKCS1_v1_5.new(self._key)
-        self._cipher = PKCS1_OAEP.new(self._key)
+        self._cipher = PKCS1_OAEP.new(self._key, hashAlgo=SHA256)
 
     def gen_public_key(self):
         """如果此含私钥，则生成相应的公钥
