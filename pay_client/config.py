@@ -16,7 +16,8 @@ class Config:
     WITHDRAW_URL = '/biz/users/{user_id}/withdraw'
     APP_WITHDRAW_URL = '/application/users/{user_id}/withdraw'
     APP_QUERY_BIN_URL = '/application/bankcard/{card_no}/bin'
-    APP_ADD_BANKCARD_URL = '/application/users/{user_id}/bankcards'
+    APP_BIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/bind'
+    APP_UNBIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/{bankcard_id}/unbind'
     APP_LIST_USER_BANKCARDS_URL = '/application/users/{user_id}/bankcards'
     APP_QUERY_USER_BALANCE_URL = "/application/users/{user_id}/balance"
     PREPAID_URL = '/biz/prepaid'

@@ -216,11 +216,11 @@ class PayClient(object):
             return result.data['data']
         return None
 
-    def app_add_bankcard(self, user_id, params=None, ret_result=False):
+    def app_bind_bankcard(self, user_id, params=None, ret_result=False):
         params = dict(params)
         params['user_id'] = user_id
 
-        url = self._generate_api_url(self.config.APP_ADD_BANKCARD_URL, user_id=user_id)
+        url = self._generate_api_url(self.config.APP_BIND_BANKCARD_URL, user_id=user_id)
         result = self.post_req(url, params)
         if ret_result:
             return result
@@ -228,6 +228,17 @@ class PayClient(object):
         if _is_success_result(result):
             return result.data['id']
         return None
+
+    def app_unbind_bankcard(self, user_id, bankcard_id):
+        params = {
+            'user_id': user_id,
+            'bankcard_id': bankcard_id
+        }
+
+        url = self._generate_api_url(self.config.APP_UNBIND_BANKCARD_URL, **params)
+        result = self.post_req(url, params)
+
+        return _is_success_result(result)
 
     def app_list_user_bankcards(self, user_id):
         params = {'user_id': user_id}
