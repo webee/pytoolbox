@@ -13,15 +13,15 @@ class Config:
     PREPAY_URL = '/biz/prepay'
     CONFIRM_GUARANTEE_PAYMENT_URL = '/biz/pay/guarantee_payment/confirm'
     REFUND_URL = '/biz/refund'
-    WITHDRAW_URL = '/biz/withdraw'
-    APP_WITHDRAW_URL = '/application/withdraw'
+    WITHDRAW_URL = '/biz/users/{user_id}/withdraw'
+    APP_WITHDRAW_URL = '/application/users/{user_id}/withdraw'
+    APP_QUERY_BIN_URL = '/application/bankcard/{card_no}/bin'
+    APP_ADD_BANKCARD_URL = '/application/users/{user_id}/bankcards'
+    APP_LIST_USER_BANKCARDS_URL = '/application/users/{user_id}/bankcards'
+    APP_QUERY_USER_BALANCE_URL = "/application/users/{user_id}/balance"
     PREPAID_URL = '/biz/prepaid'
 
     GET_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
     GET_CREATE_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
 
-    QUERY_BIN_URL = '/application/bankcard/{card_no}/bin'
-    QUERY_USER_BALANCE_URL = "/vas/zyt/account_users/{account_user_id}/balance"
-    LIST_USER_BANKCARDS_URL = '/application/account_users/{account_user_id}/bankcards'
-
-    GET_USER_TRANSACTIONS_URL = "/biz/account_users/{account_user_id}/transactions"
+    LIST_USER_TRANSACTIONS_URL = "/biz/users/{user_id}/transactions"

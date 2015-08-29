@@ -132,24 +132,6 @@ class PayClient(object):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
-    def query_user_balance(self, user_id):
-        account_user_id = self.get_account_user(user_id)
-        if account_user_id is None:
-            return {'total': Decimal(0), 'available': Decimal(0), 'frozen': Decimal(0)}
-
-        params = {
-            'account_user_id': account_user_id
-        }
-        url = self._generate_api_url(self.config.QUERY_USER_BALANCE_URL, **params)
-        result = self.get_req(url, params)
-
-        if _is_success_result(result):
-            return result.data['data']
-        return {'total': Decimal(0), 'available': Decimal(0), 'frozen': Decimal(0)}
-
-    def query_user_available_balance(self, uid):
-        return self.query_user_balance(uid)['available']
-
     def prepay(self, params):
         params = dict(params)
         url = self._generate_api_url(self.config.PREPAY_URL)
@@ -190,19 +172,86 @@ class PayClient(object):
             return result.data['sn']
         return None
 
+    def withdraw(self, user_id, params, ret_result=False):
+        params = dict(params)
+        params['user_id'] = user_id
+
+        url = self._generate_api_url(self.config.WITHDRAW_URL, user_id=user_id)
+        result = self.post_req(url, params)
+        if ret_result:
+            return result
+
+        if _is_success_result(result):
+            return result.data['sn']
+        return None
+
+    def list_transactions(self, user_id, role, page_no, page_size, q):
+        url = self._generate_api_url(self.config.LIST_USER_TRANSACTIONS_URL, user_id=user_id)
+
+        params = {
+            'role': role,
+            'page_no': page_no,
+            'page_size': page_size
+        }
+        if q:
+            params['q'] = q
+
+        url = build_url(url, **params)
+
+        params['user_id'] = user_id
+        result = self.get_req(url, params)
+
+        if _is_success_result(result):
+            return result.data['data']
+        return None
+
+    def app_query_bin(self, card_no):
+        params = {
+            'card_no': card_no
+        }
+        url = self._generate_api_url(self.config.APP_QUERY_BIN_URL, **params)
+
+        result = self.get_req(url, params)
+        if _is_success_result(result):
+            return result.data['data']
+        return None
+
+    def app_add_bankcard(self, user_id, params=None, ret_result=False):
+        params = dict(params)
+        params['user_id'] = user_id
+
+        url = self._generate_api_url(self.config.APP_ADD_BANKCARD_URL, user_id=user_id)
+        result = self.post_req(url, params)
+        if ret_result:
+            return result
+
+        if _is_success_result(result):
+            return result.data['id']
+        return None
+
+    def app_list_user_bankcards(self, user_id):
+        params = {'user_id': user_id}
+
+        url = self._generate_api_url(self.config.APP_LIST_USER_BANKCARDS_URL, **params)
+        result = self.get_req(url, params)
+
+        if _is_success_result(result):
+            return result.data['data']
+        return None
+
     def app_withdraw(self, user_id, bankcard_id=None, amount=None, notify_url=None, params=None, ret_result=False):
         if params is None:
             params = {
+                'user_id': user_id,
                 'bankcard_id': bankcard_id,
                 'amount': amount,
                 'notify_url': notify_url
             }
         else:
             params = dict(params)
-        account_user_id = self.get_account_user(user_id)
-        params['from_user_id'] = account_user_id
+            params['user_id'] = user_id
 
-        url = self._generate_api_url(self.config.WITHDRAW_URL)
+        url = self._generate_api_url(self.config.APP_WITHDRAW_URL, user_id=user_id)
         result = self.post_req(url, params)
         if ret_result:
             return result
@@ -211,70 +260,16 @@ class PayClient(object):
             return result.data['sn']
         return None
 
-    def app_withdraw(self, user_id, params, ret_result=False):
-        params = dict(params)
-
-        account_user_id = self.get_account_user(user_id)
-        params['from_user_id'] = account_user_id
-
-        url = self._generate_api_url(self.config.APP_WITHDRAW_URL)
-        result = self.post_req(url, params)
-        if ret_result:
-            return result
-
-        if _is_success_result(result):
-            return result.data['sn']
-        return None
-
-    def list_user_bankcards(self, uid):
-        account_user_id = self.get_account_user(uid)
-        if account_user_id is None:
-            return []
-
+    def app_query_user_balance(self, user_id):
         params = {
-            'account_user_id': account_user_id
+            'user_id': user_id
         }
-        url = self._generate_api_url(self.config.LIST_USER_BANKCARDS_URL, **params)
-
-        result = self.get_req(url, params)
-        if _is_success_result(result):
-            return result.data['bankcards']
-        return []
-
-    def query_bin(self, card_no):
-        params = {
-            'card_no': card_no
-        }
-        url = self._generate_api_url(self.config.QUERY_BIN_URL, **params)
-
-        result = self.get_req(url, params)
-        if _is_success_result(result):
-            return result.data['data']
-        return None
-
-    def query_transactions(self, uid, role, page_no, page_size, q):
-        account_user_id = self.get_account_user(uid)
-        if account_user_id is None:
-            return None
-
-        params = {
-            'account_user_id': account_user_id
-        }
-        url = self._generate_api_url(self.config.GET_USER_TRANSACTIONS_URL, **params)
-
-        q_params = {
-            'role': role,
-            'page_no': page_no,
-            'page_size': page_size
-        }
-        if q:
-            q_params['q'] = q
-
-        params.update(q_params)
-
-        url = build_url(url, **params)
+        url = self._generate_api_url(self.config.APP_QUERY_USER_BALANCE_URL, **params)
         result = self.get_req(url, params)
 
         if _is_success_result(result):
             return result.data['data']
-        return None
+        return {'total': Decimal(0), 'available': Decimal(0), 'frozen': Decimal(0)}
+
+    def app_query_user_available_balance(self, user_id):
+        return self.app_query_user_balance(user_id)['available']
