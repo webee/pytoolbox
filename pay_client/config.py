@@ -3,7 +3,6 @@
 
 class Config:
     MD5_KEY = ''
-    LVYE_PUB_KEY = ''
     CHANNEL_PRI_KEY = ''
     # sample
     CHANNEL_NAME = 'zyt_sample'

@@ -7,7 +7,7 @@ import os
 import requests
 from collections import namedtuple
 from ..util.sign import SignType, Signer
-from ..util import pmc_config
+from ..util import pmc_config, public_key
 from ..util.log import get_logger
 from ..util.urls import build_url
 from .config import Config
@@ -32,11 +32,14 @@ class PayClient(object):
     def __init__(self):
         self.config = Config()
         self.signer = Signer('key', 'sign')
+        self.channel_pri_key = None
         self._uid_accounts = {}
 
     def init_config(self, env_config):
         pmc_config.merge_config(self.config, env_config)
-        self.signer.init(self.config.MD5_KEY, self.config.CHANNEL_PRI_KEY, self.config.LVYE_PUB_KEY)
+        # 这里的主要作用是签名, 只需要channel_pri_key或md5_key
+        self.signer.init(self.config.MD5_KEY, self.config.CHANNEL_PRI_KEY, None)
+        self.channel_pri_key = public_key.loads_b64encoded_key(self.config.CHANNEL_PRI_KEY)
 
     def verify_request(self, f):
         from flask import request
@@ -54,8 +57,11 @@ class PayClient(object):
                     is_verify_pass = False
                 else:
                     # verify sign
+                    lvye_pub_key = self.channel_pri_key.decrypt_from_base64(data['_lvye_pub_key'])
+                    # 主要用来验签
+                    signer = Signer('key', 'sign', self.config.MD5_KEY, None, lvye_pub_key)
                     sign_type = data['sign_type']
-                    is_verify_pass = self.signer.verify(data, sign_type)
+                    is_verify_pass = signer.verify(data, sign_type)
             except Exception as e:
                 logger.exception(e)
                 is_verify_pass = False

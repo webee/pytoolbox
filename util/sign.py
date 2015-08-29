@@ -73,7 +73,7 @@ class Signer(object):
         keys = data.keys()
         keys.sort(key=lambda x: x.lower())
 
-        values = ['%s=%s' % (k, data[k]) for k in keys if k and k != self.sign_key_name and data[k] != '']
+        values = ['%s=%s' % (k, data[k]) for k in keys if k and k != self.sign_key_name and k[0] != '_' and data[k] != '']
 
         return '&'.join(values)
 
