@@ -7,7 +7,7 @@ import os
 import requests
 from collections import namedtuple
 from ..util.sign import SignType, Signer
-from ..util import pmc_config, public_key
+from ..util import pmc_config, public_key, aes
 from ..util.log import get_logger
 from ..util.urls import build_url
 from .config import Config
@@ -57,7 +57,8 @@ class PayClient(object):
                     is_verify_pass = False
                 else:
                     # verify sign
-                    lvye_pub_key = self.channel_pri_key.decrypt_from_base64(data['_lvye_pub_key'])
+                    lvye_aes_key = self.channel_pri_key.decrypt_from_base64(data['_lvye_aes_key'])
+                    lvye_pub_key = aes.decrypt_from_base64(data['_lvye_pub_key'], lvye_aes_key)
                     # 主要用来验签
                     signer = Signer('key', 'sign', self.config.MD5_KEY, None, lvye_pub_key)
                     sign_type = data['sign_type']
