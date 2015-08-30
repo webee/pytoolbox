@@ -193,6 +193,21 @@ class PayClient(object):
             return result.data
         return None
 
+    def query_withdraw(self, user_id, sn, ret_result=False):
+        params = {
+            'user_id': user_id,
+            'sn': sn
+        }
+
+        url = self._generate_api_url(self.config.QUERY_WITHDRAW_URL, **params)
+        result = self.post_req(url, params)
+        if ret_result:
+            return result
+
+        if _is_success_result(result):
+            return result.data['data']
+        return None
+
     def list_transactions(self, user_id, role, page_no, page_size, q):
         url = self._generate_api_url(self.config.LIST_USER_TRANSACTIONS_URL, user_id=user_id)
 

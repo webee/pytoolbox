@@ -13,6 +13,7 @@ class Config:
     CONFIRM_GUARANTEE_PAYMENT_URL = '/biz/pay/guarantee_payment/confirm'
     REFUND_URL = '/biz/refund'
     WITHDRAW_URL = '/biz/users/{user_id}/withdraw'
+    QUERY_WITHDRAW_URL = '/biz/users/{user_id}/withdraw/{sn}'
     APP_WITHDRAW_URL = '/application/users/{user_id}/withdraw'
     APP_QUERY_BIN_URL = '/application/bankcard/{card_no}/bin'
     APP_BIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/bind'
