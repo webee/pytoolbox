@@ -27,6 +27,15 @@ def _is_success_result(result):
     return ret
 
 
+def _submit_form(url, req_params, method='POST'):
+    submit_page = '<form id="formName" action="{0}" method="{1}">'.format(url, method)
+    for key in req_params:
+        submit_page += '''<input type="hidden" name="{0}" value='{1}' />'''.format(key, req_params[key])
+    submit_page += '<input type="submit" value="Submit" style="display:none" /></form>'
+    submit_page += '<script>document.forms["formName"].submit();</script>'
+    return submit_page
+
+
 class PayClient(object):
 
     def __init__(self):
@@ -77,13 +86,18 @@ class PayClient(object):
         url = url.lstrip('/')
         return os.path.join(self.config.ROOT_URL, url.format(**kwargs))
 
+    def _add_sign_to_params(self, params, sign_type=SignType.RSA):
+        params['sign_type'] = sign_type
+        params['channel_name'] = self.config.CHANNEL_NAME
+        params['sign'] = self.signer.sign(params, sign_type)
+
+        return params
+
     def request(self, url, params=None, sign_type=SignType.RSA, method='post'):
         if params is None:
             params = {}
 
-        params['sign_type'] = sign_type
-        params['channel_name'] = self.config.CHANNEL_NAME
-        params['sign'] = self.signer.sign(params, sign_type)
+        params = self._add_sign_to_params(params, sign_type)
 
         try:
             logger.info("request {0} {1}: {2}".format(method, url, params))
@@ -140,13 +154,24 @@ class PayClient(object):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
-    def prepay(self, params):
+    def prepay(self, params, ret_sn=False):
         params = dict(params)
         url = self._generate_api_url(self.config.PREPAY_URL)
         result = self.post_req(url, params)
         if _is_success_result(result):
+            if ret_sn:
+                return result.data['sn']
             return result.data['pay_url']
         return None
+
+    def zyt_pay(self, sn):
+        params = {
+            'sn': sn
+        }
+        url = self._generate_api_url(self.config.ZYT_PAY_URL, **params)
+
+        params = self._add_sign_to_params(params)
+        return _submit_form(url, params)
 
     def confirm_guarantee_payment(self, order_id, ret_result=False):
         params = {
