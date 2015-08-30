@@ -67,6 +67,7 @@ class PayClient(object):
                 logger.exception(e)
                 is_verify_pass = False
 
+            logger.info("[{0}] verify done.".format(request.url))
             request.__dict__['is_verify_pass'] = is_verify_pass
             request.__dict__['params'] = data
             return f(*args, **kwargs)
