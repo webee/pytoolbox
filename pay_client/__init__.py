@@ -200,7 +200,7 @@ class PayClient(object):
         }
 
         url = self._generate_api_url(self.config.QUERY_WITHDRAW_URL, **params)
-        result = self.post_req(url, params)
+        result = self.get_req(url, params)
         if ret_result:
             return result
 
