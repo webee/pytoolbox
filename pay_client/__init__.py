@@ -248,6 +248,16 @@ class PayClient(object):
 
         return _is_success_result(result)
 
+    def app_get_user_bankcard(self, user_id, bankcard_id):
+        params = {'user_id': user_id, 'bankcard_id': bankcard_id}
+
+        url = self._generate_api_url(self.config.APP_GET_USER_BANKCARD_URL, **params)
+        result = self.get_req(url, params)
+
+        if _is_success_result(result):
+            return result.data['data']
+        return None
+
     def app_list_user_bankcards(self, user_id):
         params = {'user_id': user_id}
 

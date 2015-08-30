@@ -17,6 +17,7 @@ class Config:
     APP_QUERY_BIN_URL = '/application/bankcard/{card_no}/bin'
     APP_BIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/bind'
     APP_UNBIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/{bankcard_id}/unbind'
+    APP_GET_USER_BANKCARD_URL = '/application/users/{user_id}/bankcards/{bankcard_id}'
     APP_LIST_USER_BANKCARDS_URL = '/application/users/{user_id}/bankcards'
     APP_QUERY_USER_BALANCE_URL = "/application/users/{user_id}/balance"
     PREPAID_URL = '/biz/prepaid'
