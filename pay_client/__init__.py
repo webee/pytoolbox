@@ -154,7 +154,7 @@ class PayClient(object):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
-    def prepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url=""):
+    def prepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url="", order_id=None):
         params = {
             'to_user_id': to_user_id,
             'to_domain_name': to_domain_name,
@@ -162,6 +162,8 @@ class PayClient(object):
             'callback_url': callback_url,
             'notify_url': notify_url
         }
+        if order_id is not None:
+            params['order_id'] = order_id
 
         url = self._generate_api_url(self.config.PREPAID_URL)
         params = self._add_sign_to_params(params)
@@ -321,7 +323,8 @@ class PayClient(object):
             return result.data['data']
         return None
 
-    def app_withdraw(self, user_id, bankcard_id=None, amount=None, notify_url=None, params=None, ret_result=False):
+    def app_withdraw(self, user_id, bankcard_id=None, amount=None, notify_url=None, order_id=None,
+                     params=None, ret_result=False):
         if params is None:
             params = {
                 'user_id': user_id,
@@ -329,6 +332,8 @@ class PayClient(object):
                 'amount': amount,
                 'notify_url': notify_url
             }
+            if order_id is not None:
+                params['order_id'] = order_id
         else:
             params = dict(params)
             params['user_id'] = user_id
