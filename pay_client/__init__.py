@@ -154,6 +154,19 @@ class PayClient(object):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
+    def prepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url=""):
+        params = {
+            'to_user_id': to_user_id,
+            'to_domain_name': to_domain_name,
+            'amount': amount,
+            'callback_url': callback_url,
+            'notify_url': notify_url
+        }
+
+        url = self._generate_api_url(self.config.PREPAID_URL)
+        params = self._add_sign_to_params(params)
+        return _submit_form(url, params)
+
     def prepay(self, params, ret_sn=False):
         params = dict(params)
         url = self._generate_api_url(self.config.PREPAY_URL)
