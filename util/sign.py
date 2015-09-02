@@ -21,12 +21,16 @@ class Signer(object):
         self.sign_key_name = sign_key_name
         self.md5_key = md5_key
         self.pri_key = pri_key
+        self.pri_key_obj = public_key.loads_b64encoded_key(pri_key) if pri_key else None
         self.pub_key = pub_key
+        self.pub_key_obj = public_key.loads_b64encoded_key(pub_key) if pub_key else None
 
     def init(self, md5_key, pri_key, pub_key):
         self.md5_key = md5_key
         self.pri_key = pri_key
+        self.pri_key_obj = public_key.loads_b64encoded_key(pri_key) if pri_key else None
         self.pub_key = pub_key
+        self.pub_key_obj = public_key.loads_b64encoded_key(pub_key) if pub_key else None
 
     def md5_sign(self, data):
         return self._sign_md5_data(data)
@@ -61,13 +65,15 @@ class Signer(object):
     def _sign_rsa_data(self, data):
         src = self._gen_sign_data(data)
 
-        return _sign_rsa(src, self.pri_key)
+        return _sign_rsa(src, self.pri_key_obj)
 
-    def _verify_rsa_data(self, data):
+    def _verify_rsa_data(self, data, is_inner=False):
         signed = data.get(self.sign_key_name)
         src = self._gen_sign_data(data)
 
-        return _verify_rsa(src, self.pub_key, signed)
+        if not is_inner:
+            return _verify_rsa(src, self.pub_key_obj, signed)
+        return _verify_rsa(src, self.pri_key_obj.gen_public_key(), signed)
 
     def _gen_sign_data(self, data):
         keys = data.keys()
@@ -88,22 +94,20 @@ def _verify_md5(src, key, signed, key_param_name):
     return signed == _sign_md5(src, key, key_param_name)
 
 
-def _sign_rsa(src, pri_key):
+def _sign_rsa(src, key):
     """ 私钥签名
     :param src: 数据字符串
-    :param pri_key: 私钥
+    :param key: 私钥
     :return:
     """
-    key = public_key.loads_b64encoded_key(pri_key)
     src = src.encode('utf-8')
     return key.sign_md5_to_base64(src)
 
 
-def _verify_rsa(src, pub_key, signed):
+def _verify_rsa(src, key, signed):
     """ 公钥验签
     :param src: 数据字符串
-    :param pub_key: 公钥
+    :param key: 公钥
     :return:
     """
-    key = public_key.loads_b64encoded_key(pub_key)
     return key.verify_md5_from_base64(src.encode('utf-8'), signed)
