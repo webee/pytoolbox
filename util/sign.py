@@ -16,7 +16,8 @@ class SignType:
 
 
 class Signer(object):
-    def __init__(self, md5_key_param_name='key', sign_key_name='sign', md5_key=None, pri_key=None, pub_key=None):
+    def __init__(self, md5_key_param_name='key', sign_key_name='sign', md5_key=None, pri_key=None, pub_key=None,
+                 is_inner_key='_is_inner'):
         self.md5_key_param_name = md5_key_param_name
         self.sign_key_name = sign_key_name
         self.md5_key = md5_key
@@ -24,6 +25,8 @@ class Signer(object):
         self.pri_key_obj = public_key.loads_b64encoded_key(pri_key) if pri_key else None
         self.pub_key = pub_key
         self.pub_key_obj = public_key.loads_b64encoded_key(pub_key) if pub_key else None
+
+        self.is_inner_key = is_inner_key
 
     def init(self, md5_key, pri_key, pub_key):
         self.md5_key = md5_key
@@ -67,7 +70,8 @@ class Signer(object):
 
         return _sign_rsa(src, self.pri_key_obj)
 
-    def _verify_rsa_data(self, data, is_inner=False):
+    def _verify_rsa_data(self, data):
+        is_inner = data.get(self.is_inner_key)
         signed = data.get(self.sign_key_name)
         src = self._gen_sign_data(data)
 
