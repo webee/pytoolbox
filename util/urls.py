@@ -10,6 +10,7 @@ def build_url(base_url, *args, **kwargs):
     parts = urlparse.urlparse(base_url)
 
     target_params = urlparse.parse_qs(parts.query, keep_blank_values=True)
+    # expect args to be dicts.
     added_params = [params for params in args]
     added_params.append(kwargs)
 
@@ -22,3 +23,18 @@ def build_url(base_url, *args, **kwargs):
     parts[4] = urllib.urlencode(target_params, doseq=True)
 
     return urlparse.urlunparse(parts)
+
+
+def extract_query_params(url):
+    """
+    http://a.b.c/d/?a=1&b=2&c=3&a=11
+    => {'a': '11', 'b': '2', 'c': '3'}
+    multi values, get the last one.
+    :param url:
+    :return:
+    """
+    parts = urlparse.urlparse(url)
+
+    pairs = urlparse.parse_qsl(parts.query)
+
+    return {k: v for k, v in pairs}
