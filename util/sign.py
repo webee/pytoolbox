@@ -18,6 +18,15 @@ class SignType:
 class Signer(object):
     def __init__(self, md5_key_param_name='key', sign_key_name='sign', md5_key=None, pri_key=None, pub_key=None,
                  is_inner_key='_is_inner'):
+        """
+        :param md5_key_param_name: md5_key本身是要参与签名的，此为生成原始字符串时其参数名
+        :param sign_key_name: 签名参数名
+        :param md5_key:
+        :param pri_key:
+        :param pub_key:
+        :param is_inner_key: is_inner表示是否为相同的私钥签名的，is_inner_key为此值的参数名
+        :return:
+        """
         self.md5_key_param_name = md5_key_param_name
         self.sign_key_name = sign_key_name
         self.md5_key = md5_key
@@ -77,6 +86,7 @@ class Signer(object):
 
         if not is_inner:
             return _verify_rsa(src, self.pub_key_obj, signed)
+        # 只要is_inner_key传了，且不为空
         return _verify_rsa(src, self.pri_key_obj.gen_public_key(), signed)
 
     def _gen_sign_data(self, data):
