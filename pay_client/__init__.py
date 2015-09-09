@@ -9,7 +9,7 @@ from collections import namedtuple
 from ..util.sign import SignType, Signer
 from ..util import pmc_config, public_key, aes
 from ..util.log import get_logger
-from ..util.urls import build_url
+from ..util.urls import build_url, extract_query_params
 from .config import Config
 
 
@@ -97,6 +97,7 @@ class PayClient(object):
         if params is None:
             params = {}
 
+        params.update(extract_query_params(url))
         params = self._add_sign_to_params(params, sign_type)
 
         try:
