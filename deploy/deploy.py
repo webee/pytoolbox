@@ -47,13 +47,15 @@ class Deployment(object):
         repo_dir = self._project_dir
 
         if not exists(repo_dir):
-            self._clone_codes(self._git_repo, repo_dir)
+            self._clone_codes(self._git_repo)
         else:
             self._pull_codes(repo_dir)
 
-    def _clone_codes(self, git_repo, base_dir):
-        fab.run('git clone --recursive {0} {1}'.format(git_repo, base_dir))
-        self._create_venv(base_dir)
+    def _clone_codes(self, git_repo):
+        parent_dir = path.abspath(path.dirname(self._project_dir))
+        with fab.cd(parent_dir):
+            fab.run('git clone --recursive {0}'.format(git_repo))
+        self._create_venv(self._site_dir())
 
     def _create_venv(self, base_dir):
         with fab.cd(base_dir):
@@ -95,7 +97,7 @@ class Deployment(object):
 
     def _pip_install(self):
         with fab.cd(self._site_dir()), fab.prefix('source venv/bin/activate'):
-            fab.run('pip install -r requirements.txt'.format(environ['ENV']))
+            fab.run('pip install -r requirements.txt')
 
     def _bower_install(self):
         with fab.cd(self._site_dir()):
