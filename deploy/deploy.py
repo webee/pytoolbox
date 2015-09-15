@@ -51,11 +51,13 @@ class Deployment(object):
         else:
             self._pull_codes(repo_dir)
 
+        if not exists(self._venv_dir):
+            self._create_venv(self._site_dir)
+
     def _clone_codes(self, git_repo):
         parent_dir = path.abspath(path.dirname(self._project_dir))
         with fab.cd(parent_dir):
             fab.run('git clone --recursive {0}'.format(git_repo))
-        self._create_venv(self._site_dir())
 
     def _create_venv(self, base_dir):
         with fab.cd(base_dir):
@@ -92,16 +94,21 @@ class Deployment(object):
         fab.run('sudo /usr/local/bin/supervisorctl start {}'.format(name))
 
     def _migrate_db(self):
-        with fab.cd(self._site_dir()), fab.prefix('source venv/bin/activate'):
+        with fab.cd(self._site_dir), fab.prefix('source venv/bin/activate'):
             fab.run('python src/manager.py -e {0} migrate'.format(environ['ENV']))
 
     def _pip_install(self):
-        with fab.cd(self._site_dir()), fab.prefix('source venv/bin/activate'):
+        with fab.cd(self._site_dir), fab.prefix('source venv/bin/activate'):
             fab.run('pip install -r requirements.txt')
 
     def _bower_install(self):
-        with fab.cd(self._site_dir()):
+        with fab.cd(self._site_dir):
             fab.run('bower install')
 
+    @property
     def _site_dir(self):
         return path.join(self._project_dir, self._site_name)
+
+    @property
+    def _venv_dir(self):
+        return path.join(self._site_dir, 'venv')
