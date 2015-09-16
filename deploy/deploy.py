@@ -14,6 +14,7 @@ class Deployment(object):
         self._project_dir = project_dir
         self._server_name = server_name
         self._site_name = site_name
+        self._env = environ['ENV']
         self._supervisord = AttrDict(config_path=supervisord_config_path,
                                      context=context if context else {},
                                      remote_dir=supervisord_remote_dir)
@@ -40,7 +41,8 @@ class Deployment(object):
             'server_name': self._server_name,
             'site_dir': self._site_dir,
             'project_dir': self._project_dir,
-            'user': user
+            'user': user,
+            'env': self._env
         }
 
     def _update_codes(self):
@@ -95,7 +97,7 @@ class Deployment(object):
 
     def _migrate_db(self):
         with fab.cd(self._site_dir), fab.prefix('source venv/bin/activate'):
-            fab.run('python src/manager.py -e {0} migrate'.format(environ['ENV']))
+            fab.run('python src/manager.py -e {0} migrate'.format(self._env))
 
     def _pip_install(self):
         with fab.cd(self._site_dir), fab.prefix('source venv/bin/activate'):
