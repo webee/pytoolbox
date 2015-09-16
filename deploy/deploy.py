@@ -26,14 +26,14 @@ class Deployment(object):
         self._update_codes()
         self._update_supervisord_config(self._default_context(user))
 
-        self._stop_api_server(self._server_name)
+        self._stop_server(self._server_name)
         if pip_install:
             self._pip_install()
         if bower_install:
             self._bower_install()
         if db_migration:
             self._migrate_db()
-        self._start_api_server(self._server_name)
+        self._start_server(self._server_name)
 
     def _default_context(self, user):
         return {
@@ -87,10 +87,10 @@ class Deployment(object):
         upload_template(template_file_name, remote_path, context=context, use_jinja=True, template_dir=template_dir,
                         use_sudo=True, backup=False)
 
-    def _stop_api_server(self, name):
+    def _stop_server(self, name):
         fab.run('sudo /usr/local/bin/supervisorctl stop {}'.format(name))
 
-    def _start_api_server(self, name):
+    def _start_server(self, name):
         fab.run('sudo /usr/local/bin/supervisorctl start {}'.format(name))
 
     def _migrate_db(self):
