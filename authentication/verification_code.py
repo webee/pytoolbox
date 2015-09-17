@@ -17,6 +17,10 @@ def send_code(service_url, cdkey, password, business_type, phone_no):
     sms.send(phone_no, _build_message(code))
 
 
+def verify_code(business_type, phone_no, code):
+    return _is_unexpired_code(business_type, phone_no, code)
+
+
 @db_context
 def _clear_expired_codes(db):
     db.execute("DELETE FROM verification_code WHERE expiration >= %(now)s", now=datetime.now())
@@ -43,6 +47,17 @@ def _save_code(db, business_type, phone_no, code):
         'created_on': datetime.now()
     }
     db.insert('verification_code', **fields)
+
+
+@db_context
+def _is_unexpired_code(db, business_type, phone_no, code):
+    return db.exists("""
+            SELECT code FROM verification_code
+              WHERE business_type = %(type)s
+                AND phone_no = %(phone_no)s
+                AND code = %(code)s
+                AND expiration < %(now)s
+          """, type=business_type, phone_no=phone_no, code=code, now=datetime.now())
 
 
 def _generate_code(business_type, phone_no):
