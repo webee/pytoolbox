@@ -1,0 +1,9 @@
+CREATE TABLE verification_code(
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  business_type INT NOT NULL,
+  phone_no CHAR(11) NOT NULL,
+  code CHAR(6) NOT NULL,
+  expiration TIMESTAMP NOT NULL,
+
+  created_on TIMESTAMP NOT NULL
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
