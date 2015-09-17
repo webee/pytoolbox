@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 from .error import *
 from ..util.enum import enum
 
-__all__ = ['BusinessType', 'CodeSender']
+__all__ = ['BusinessType', 'CodeSender', 'User']
 
 
 BusinessType = enum(LOGIN=1)
