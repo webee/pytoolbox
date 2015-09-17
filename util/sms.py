@@ -34,5 +34,5 @@ class SMS(object):
         return False
 
 
-    def _build_message(msg):
+    def _build_message(self, msg):
         return "【绿野】%s" % msg
