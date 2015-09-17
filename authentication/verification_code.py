@@ -56,7 +56,7 @@ def _is_unexpired_code(db, business_type, phone_no, code):
               WHERE business_type = %(type)s
                 AND phone_no = %(phone_no)s
                 AND code = %(code)s
-                AND expiration < %(now)s
+                AND expiration > %(now)s
           """, type=business_type, phone_no=phone_no, code=code, now=datetime.now())
 
 
