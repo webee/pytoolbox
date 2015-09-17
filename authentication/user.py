@@ -5,7 +5,7 @@ from ..util.dbs import db_context
 
 @db_context
 def find_user(db, phone_no):
-    return db.exists("SELECT * FROM user WHERE phone_no = %(phone_no)s", phone_no=phone_no)
+    return db.get("SELECT * FROM user WHERE phone_no = %(phone_no)s", phone_no=phone_no)
 
 
 @db_context
