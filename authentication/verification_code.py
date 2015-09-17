@@ -23,7 +23,7 @@ def verify_code(business_type, phone_no, code):
 
 @db_context
 def _clear_expired_codes(db):
-    db.execute("DELETE FROM verification_code WHERE expiration >= %(now)s", now=datetime.now())
+    db.execute("DELETE FROM verification_code WHERE expiration <= %(now)s", now=datetime.now())
 
 
 @db_context
@@ -32,7 +32,7 @@ def _find_unexpired_code(db, business_type, phone_no):
             SELECT code FROM verification_code
               WHERE business_type = %(type)s
                 AND phone_no = %(phone_no)s
-                AND expiration < %(now)s
+                AND expiration > %(now)s
           """, type=business_type, phone_no=phone_no, now=datetime.now())
 
 
