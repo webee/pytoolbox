@@ -27,3 +27,10 @@ class User(object):
         from .verification_code import verify_code
         if not verify_code(BusinessType.LOGIN, phone_no, verification_code):
             raise CodeVerificationFailedError(phone_no, verification_code)
+
+        from .user import find_user, new_user
+        user = find_user(phone_no)
+        if user:
+            return user.id
+
+        return new_user(phone_no)
