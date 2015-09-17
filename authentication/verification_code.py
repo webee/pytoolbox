@@ -57,4 +57,4 @@ def _generate_code(business_type, phone_no):
 
 
 def _build_message(code):
-    return "验证码%s，该验证码五分钟内有效。" % code
+    return "验证码%s，该验证码十分钟内有效。" % code
