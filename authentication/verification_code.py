@@ -4,11 +4,8 @@ from datetime import datetime, timedelta
 import string
 from ..util import strings
 from ..util.dbs import db_context
-from ..util.enum import enum
 from ..util.sms import SMS
 
-
-business_type = enum(REGISTER=1, LOGIN=2)
 _expiration_interval_in_minutes = 10
 
 

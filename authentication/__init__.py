@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function, division
+from ..util.enum import enum
 
-__all__ = ['CodeSender']
+__all__ = ['BusinessType', 'CodeSender']
+
+
+BusinessType = enum(REGISTER=1, LOGIN=2)
 
 
 class CodeSender(object):
