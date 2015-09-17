@@ -39,6 +39,11 @@ def encrypt_to_base64(data, key):
     return base64.b64encode(cipher.encrypt(__pkcs7_padding(data)))
 
 
+def decrypt_from_base64_with_mode(data, key, mode=AES.MODE_CBC, iv=None):
+    cipher = AES.new(key[:16], mode, IV=iv)
+    return __depkcs7_padding(cipher.decrypt(base64.b64decode(data))).decode('utf8')
+
+
 def decrypt_from_base64(data, key):
     cipher = AES.new(key[:16])
     return __depkcs7_padding(cipher.decrypt(base64.b64decode(data))).decode('utf8')
