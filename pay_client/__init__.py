@@ -11,6 +11,7 @@ from ..util import pmc_config, public_key, aes
 from ..util.log import get_logger
 from ..util.urls import build_url, extract_query_params
 from .config import Config
+from . import constant
 
 
 logger = get_logger(__name__)
@@ -155,7 +156,10 @@ class PayClient(object):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
-    def prepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url="", order_id=None):
+    def web_checkout_url(self, sn, source=constant.TransactionType.PAYMENT):
+        return self._generate_api_url(self.config.WEB_CHECKOUT_URL, source=source, sn=sn)
+
+    def preprepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url="", order_id=None):
         params = {
             'to_user_id': to_user_id,
             'to_domain_name': to_domain_name,
@@ -166,9 +170,16 @@ class PayClient(object):
         if order_id is not None:
             params['order_id'] = order_id
 
-        url = self._generate_api_url(self.config.PREPAID_URL)
-        params = self._add_sign_to_params(params)
-        return _submit_form(url, params)
+        url = self._generate_api_url(self.config.PREPREPAID_URL)
+        result = self.post_req(url, params)
+        if _is_success_result(result):
+            return result.data['sn']
+        return None
+
+    def prepaid_web_checkout_url(self, *args, **kwargs):
+        sn = self.preprepaid(*args, **kwargs)
+        if sn is not None:
+            return self.web_checkout_url(sn, constant.TransactionType.PREPAID)
 
     def prepay(self, params, ret_sn=False):
         params = dict(params)
@@ -179,6 +190,11 @@ class PayClient(object):
                 return result.data['sn']
             return result.data['pay_url']
         return None
+
+    def pay_web_checkout_url(self, params):
+        sn = self.prepay(params, ret_sn=True)
+        if sn is not None:
+            return self.web_checkout_url(sn)
 
     def zyt_pay(self, sn):
         params = {

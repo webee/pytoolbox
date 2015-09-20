@@ -22,7 +22,10 @@ class Config:
     APP_GET_USER_BANKCARD_URL = '/application/users/{user_id}/bankcards/{bankcard_id}'
     APP_LIST_USER_BANKCARDS_URL = '/application/users/{user_id}/bankcards'
     APP_QUERY_USER_BALANCE_URL = "/application/users/{user_id}/balance"
-    PREPAID_URL = '/biz/prepaid'
+
+    PREPREPAID_URL = '/biz/preprepaid'
+
+    WEB_CHECKOUT_URL = '/checkout/web/{source}/{sn}'
 
     GET_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
     GET_CREATE_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
