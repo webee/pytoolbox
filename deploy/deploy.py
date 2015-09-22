@@ -14,6 +14,7 @@ class Deployment(object):
         self._project_dir = project_dir
         self._server_name = server_name
         self._site_name = site_name
+        self._env = environ['ENV']
         self._supervisord = AttrDict(config_path=supervisord_config_path,
                                      context=context if context else {},
                                      remote_dir=supervisord_remote_dir)
@@ -26,34 +27,39 @@ class Deployment(object):
         self._update_codes()
         self._update_supervisord_config(self._default_context(user))
 
-        self._stop_api_server(self._server_name)
+        self._stop_server(self._server_name)
         if pip_install:
             self._pip_install()
         if bower_install:
             self._bower_install()
         if db_migration:
             self._migrate_db()
-        self._start_api_server(self._server_name)
+        self._start_server(self._server_name)
 
     def _default_context(self, user):
         return {
             'server_name': self._server_name,
-            'site_dir': self._site_dir(),
+            'site_dir': self._site_dir,
             'project_dir': self._project_dir,
-            'user': user
+            'user': user,
+            'env': self._env
         }
 
     def _update_codes(self):
         repo_dir = self._project_dir
 
         if not exists(repo_dir):
-            self._clone_codes(self._git_repo, repo_dir)
+            self._clone_codes(self._git_repo)
         else:
             self._pull_codes(repo_dir)
 
-    def _clone_codes(self, git_repo, base_dir):
-        fab.run('git clone --recursive {0} {1}'.format(git_repo, base_dir))
-        self._create_venv(base_dir)
+        if not exists(self._venv_dir):
+            self._create_venv(self._site_dir)
+
+    def _clone_codes(self, git_repo):
+        parent_dir = path.abspath(path.dirname(self._project_dir))
+        with fab.cd(parent_dir):
+            fab.run('git clone --recursive {0}'.format(git_repo))
 
     def _create_venv(self, base_dir):
         with fab.cd(base_dir):
@@ -83,23 +89,28 @@ class Deployment(object):
         upload_template(template_file_name, remote_path, context=context, use_jinja=True, template_dir=template_dir,
                         use_sudo=True, backup=False)
 
-    def _stop_api_server(self, name):
+    def _stop_server(self, name):
         fab.run('sudo /usr/local/bin/supervisorctl stop {}'.format(name))
 
-    def _start_api_server(self, name):
+    def _start_server(self, name):
         fab.run('sudo /usr/local/bin/supervisorctl start {}'.format(name))
 
     def _migrate_db(self):
-        with fab.cd(self._site_dir()), fab.prefix('source venv/bin/activate'):
-            fab.run('python src/manager.py -e {0} migrate'.format(environ['ENV']))
+        with fab.cd(self._site_dir), fab.prefix('source venv/bin/activate'):
+            fab.run('python src/manager.py -e {0} migrate'.format(self._env))
 
     def _pip_install(self):
-        with fab.cd(self._site_dir()), fab.prefix('source venv/bin/activate'):
-            fab.run('pip install -r requirements.txt'.format(environ['ENV']))
+        with fab.cd(self._site_dir), fab.prefix('source venv/bin/activate'):
+            fab.run('pip install -r requirements.txt')
 
     def _bower_install(self):
-        with fab.cd(self._site_dir()):
+        with fab.cd(self._site_dir):
             fab.run('bower install')
 
+    @property
     def _site_dir(self):
         return path.join(self._project_dir, self._site_name)
+
+    @property
+    def _venv_dir(self):
+        return path.join(self._site_dir, 'venv')
