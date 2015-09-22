@@ -196,11 +196,11 @@ class PayClient(object):
         if sn is not None:
             return self.web_checkout_url(sn)
 
-    def zyt_pay(self, sn):
+    def web_zyt_pay(self, sn):
         params = {
             'sn': sn
         }
-        url = self._generate_api_url(self.config.ZYT_PAY_URL, **params)
+        url = self._generate_api_url(self.config.WEB_ZYT_PAY_URL, **params)
 
         params = self._add_sign_to_params(params)
         return _submit_form(url, params)

@@ -10,7 +10,6 @@ class Config:
     ROOT_URL = "http://pay.lvye.com/api/__"
     QUERY_USER_IS_OPENED_URL = "/user_mapping/users/{user_id}/is_opened"
     PREPAY_URL = '/biz/prepay'
-    ZYT_PAY_URL = '/biz/zyt_pay/{sn}'
     CONFIRM_GUARANTEE_PAYMENT_URL = '/biz/pay/guarantee_payment/confirm'
     REFUND_URL = '/biz/refund'
     WITHDRAW_URL = '/biz/users/{user_id}/withdraw'
@@ -26,6 +25,7 @@ class Config:
     PREPREPAID_URL = '/biz/preprepaid'
 
     WEB_CHECKOUT_URL = '/checkout/web/{source}/{sn}'
+    WEB_ZYT_PAY_URL = '/checkout/web/pay/zyt/{sn}'
 
     GET_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
     GET_CREATE_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
