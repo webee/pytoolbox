@@ -38,6 +38,7 @@ def _submit_form(url, req_params, method='POST'):
 
 
 class PayClient(object):
+    constant = constant
 
     def __init__(self):
         self.config = Config()
