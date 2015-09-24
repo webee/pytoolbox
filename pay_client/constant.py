@@ -23,3 +23,8 @@ class RequestClientType:
     WAP = 'WAP'
     IOS = 'IOS'
     ANDROID = 'ANDROID'
+
+
+class PaymentType:
+    DIRECT = 'DIRECT'
+    GUARANTEE = 'GUARANTEE'
