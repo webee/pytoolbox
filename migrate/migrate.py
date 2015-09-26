@@ -22,7 +22,10 @@ def migrate(script_path):
         if _is_valid_migration_script(script_name) and script_name not in executed:
             try:
                 print('[MIGRATE] - execute: %s' % script_name)
-                from_db().execute(open(script, 'r').read())
+                if _is_sql_script(script_name):
+                    from_db().execute(open(script, 'r').read())
+                elif _is_python_script(script_name):
+                    _python_execute(script_path, script_name)
             except Exception:
                 print('Error to execute script %s' % script_name)
                 from_db().insert(MIGRATION_RECORD_TABLE, script_name=script_name, success=False)
@@ -32,8 +35,16 @@ def migrate(script_path):
     print('Database is up to date')
 
 
+def _is_sql_script(script_name):
+    return script_name.endswith('.sql')
+
+
+def _is_python_script(script_name):
+    return script_name.endswith('.py')
+
+
 def _is_valid_migration_script(script_name):
-    return script_name[0:3].isdigit() and script_name.endswith('.sql')
+    return script_name[0:3].isdigit() and (_is_sql_script(script_name) or _is_python_script(script_name))
 
 
 def _clear_previous_failed_script_record():
@@ -54,3 +65,8 @@ def _try_create_migration_table():
                 executed_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
             """ % MIGRATION_RECORD_TABLE)
+
+
+def _python_execute(script_path, script_name):
+    file_path = os.path.join(script_path, script_name)
+    execfile(file_path)
