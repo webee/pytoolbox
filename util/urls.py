@@ -33,8 +33,11 @@ def extract_query_params(url):
     :param url:
     :return:
     """
+    if isinstance(url, unicode):
+        url = url.encode('utf-8')
     parts = urlparse.urlparse(url)
 
     pairs = urlparse.parse_qsl(parts.query)
 
-    return {k: v for k, v in pairs}
+    d = {k: v.decode('utf-8') for k, v in pairs}
+    return d
