@@ -178,6 +178,9 @@ def _merge_config_value(config_package, x, v, fromp=None):
             for _x in [i for i in dir(v) if _is_valid_config_member(v, i)]:
                 _v = getattr(v, _x)
                 _merge_config_value(orig_v, _x, _v, fromp='{0}.{1}'.format(fromp, v.__name__))
+            else:
+                if not hasattr(orig_v, '__members__'):
+                    setattr(orig_v, '__members__', {})
 
             if not hasattr(config_package, '__members__'):
                 setattr(config_package, '__members__', {})
@@ -301,3 +304,12 @@ def cover_inject_from_file(mod_path, yaml_file, path="", root=get_project_root()
     data = _get_deep_value(data, names)
 
     _inject_data(target_mod, data)
+
+
+def load_yaml(yaml_file, root=get_project_root()):
+    import yaml
+    return yaml.load(open(os.path.join(root, yaml_file)))
+
+
+def abstract_path(path, root=get_project_root()):
+    return path if path.startswith('/') else os.path.join(root, path)
