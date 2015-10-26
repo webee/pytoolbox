@@ -27,6 +27,7 @@ def update_code(env, code_dir, root_dir):
         fab.run('git pull --ff-only origin %s' % branch)
 
     with fab.cd(root_dir):
+        fab.run('git submodule init')
         fab.run('git submodule update')
 
 
