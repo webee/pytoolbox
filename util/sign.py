@@ -100,6 +100,7 @@ class Signer(object):
         else:
             keys.sort()
 
+        # 过滤掉空值，list和dict类型
         values = ['%s=%s' % (k, data[k]) for k in keys
                   if k and k != self.sign_key_name and k[0] != '_' and data[k] != '' and not isinstance(data[k], (dict, list))]
 
