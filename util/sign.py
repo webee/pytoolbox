@@ -93,6 +93,10 @@ class Signer(object):
         # 只要is_inner_key传了，且不为空
         return self._verify_rsa(src, self.pri_key_obj.gen_public_key(), signed)
 
+    def _is_valid_item(self, k, v):
+        return k and k != self.sign_key_name and k[0] != '_' \
+               and v is not None and v != '' and not isinstance(v, (dict, list))
+
     def _gen_sign_data(self, data):
         keys = data.keys()
         if self.ignore_case:
@@ -101,8 +105,7 @@ class Signer(object):
             keys.sort()
 
         # 过滤掉空值，list和dict类型
-        values = ['%s=%s' % (k, data[k]) for k in keys
-                  if k and k != self.sign_key_name and k[0] != '_' and data[k] != '' and not isinstance(data[k], (dict, list))]
+        values = ['%s=%s' % (k, data[k]) for k in keys if self._is_valid_item(k, data[k])]
 
         return '&'.join(values)
 
