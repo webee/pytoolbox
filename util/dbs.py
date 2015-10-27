@@ -126,10 +126,7 @@ class _DatabaseInterface(object):
     def list_scalar(self, sql, *args, **kwargs):
         rows = self._query(sql, *args, **kwargs)
         if rows and len(rows[0]) > 1:
-            raise Exception('More than one columns returned: sql is %(sql)s and args are %(args)s', {
-                'sql': sql,
-                'args': args or kwargs
-            })
+            raise Exception('More than one columns returned: sql is %(sql)s and args are %(args)s'.format(sql, args or kwargs).encode('utf-8'))
         return [row[0] for row in rows]
 
     def get(self, sql, *args, **kwargs):
@@ -161,10 +158,7 @@ class _DatabaseInterface(object):
                 'args': args or kwargs
             })
         if len(rows[0]) > 1:
-            raise Exception('More than one columns returned: sql is %(sql)s and args are %(args)s', {
-                'sql': sql,
-                'args': args or kwargs
-            })
+            raise Exception('More than one columns returned: sql is {0} and args are {1}'.format(sql, args or kwargs).encode('utf-8'))
         return rows[0][0]
 
     def insert(self, table, values=None, returns_id=False, **value_fields):
