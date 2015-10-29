@@ -226,29 +226,29 @@ def _get_env_name(name=ENV_VAR_NAME, mapping=None, env=None):
 __project_root = None
 
 
-def get_project_root(from_path=None):
+def get_project_root(from_path=None, target='src'):
     from os.path import dirname
     global __project_root
 
     if __project_root is None:
-        src_path = _find_dir_path(from_path or __file__, 'src')
+        src_path = _find_target_path(from_path or __file__, target)
         __project_root = os.getenv('PROJ_ROOT', dirname(src_path))
 
     return __project_root
 
 
-def _find_dir_path(from_filepath, target_name):
-    from os.path import dirname, isdir, join, abspath
+def _find_target_path(from_filepath, target_name):
+    from os.path import dirname, exists, join, abspath
 
     cur_dir = dirname(abspath(from_filepath))
     if cur_dir == '/':
-        raise OSError("Cannot find [{0}] folder.".format(target_name))
+        raise OSError("Cannot find [{0}].".format(target_name))
 
     try_path = join(cur_dir, target_name)
-    if isdir(try_path):
+    if exists(try_path):
         return try_path
 
-    return _find_dir_path(cur_dir, target_name)
+    return _find_target_path(cur_dir, target_name)
 
 
 def read_string(filepath, root=get_project_root()):
