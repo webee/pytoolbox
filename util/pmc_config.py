@@ -227,11 +227,13 @@ __project_root = None
 
 
 def get_project_root(from_path=None, target='src'):
+    from . import runtime
     from os.path import dirname
     global __project_root
 
     if __project_root is None:
-        src_path = _find_target_path(from_path or __file__, target)
+        from_path = from_path or runtime.current_file() or __file__
+        src_path = _find_target_path(from_path, target)
         __project_root = os.getenv('PROJ_ROOT', dirname(src_path))
 
     return __project_root
@@ -251,9 +253,10 @@ def _find_target_path(from_filepath, target_name):
     return _find_target_path(cur_dir, target_name)
 
 
-def read_string(filepath, root=get_project_root()):
+def read_string(filepath, root=None):
     from os import path
 
+    root = root or get_project_root()
     with open(path.join(root, filepath)) as fin:
         return fin.read().strip('\n')
 
@@ -287,7 +290,7 @@ def _get_deep_value(data, names=()):
     return data
 
 
-def cover_inject_from_file(mod_path, yaml_file, path="", root=get_project_root()):
+def cover_inject_from_file(mod_path, yaml_file, path="", root=None):
     """ insert configs from a yaml file section specified by path.
     :param mod_path:
     :param yaml_file:
@@ -297,6 +300,7 @@ def cover_inject_from_file(mod_path, yaml_file, path="", root=get_project_root()
     """
     import yaml
 
+    root = root or get_project_root()
     target_mod = __import__(mod_path, fromlist=[mod_path])
 
     data = yaml.load(open(os.path.join(root, yaml_file)))
@@ -306,10 +310,13 @@ def cover_inject_from_file(mod_path, yaml_file, path="", root=get_project_root()
     _inject_data(target_mod, data)
 
 
-def load_yaml(yaml_file, root=get_project_root()):
+def load_yaml(yaml_file, root=None):
     import yaml
+
+    root = root or get_project_root()
     return yaml.load(open(os.path.join(root, yaml_file)))
 
 
-def abstract_path(path, root=get_project_root()):
+def abstract_path(path, root=None):
+    root = root or get_project_root()
     return path if path.startswith('/') else os.path.join(root, path)
