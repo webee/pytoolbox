@@ -52,37 +52,58 @@ class PayClient(object):
         self.signer.init(self.config.MD5_KEY, self.config.CHANNEL_PRI_KEY, None)
         self.channel_pri_key = public_key.loads_b64encoded_key(self.config.CHANNEL_PRI_KEY)
 
+    def _do_verify_request(self, method, url, data):
+        try:
+            logger.info('receive request [{0}] [{1}]: [{2}]'.format(method, url, data))
+            # check channel
+            channel_name = data.get('channel_name')
+            if channel_name != self.config.CHANNEL_NAME:
+                is_verify_pass = False
+            else:
+                # verify sign
+                lvye_aes_key = self.channel_pri_key.decrypt_from_base64(data['_lvye_aes_key'])
+                lvye_pub_key = aes.decrypt_from_base64(data['_lvye_pub_key'], lvye_aes_key)
+                # 主要用来验签
+                signer = Signer('key', 'sign', self.config.MD5_KEY, None, lvye_pub_key)
+                sign_type = data['sign_type']
+                is_verify_pass = signer.verify(data, sign_type)
+        except Exception as e:
+            logger.exception(e)
+            is_verify_pass = False
+
+        logger.info("[{0}] verify done.".format(url))
+        return is_verify_pass
+
+    def verify_request_generic(self, get_ctx, set_ctx=None):
+        def verify_request(f):
+            @wraps(f)
+            def wrapper(*args, **kwargs):
+                method, url, data = get_ctx(*args, **kwargs)
+                is_verify_pass = self._do_verify_request(method, url, data)
+                if set_ctx:
+                    set_ctx(is_verify_pass, data)
+                    return f(*args, **kwargs)
+                return f(is_verify_pass, data, *args, **kwargs)
+            return wrapper
+        return verify_request
+
     def verify_request(self, f):
+        """ for flask
+        """
         from flask import request
 
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            try:
-                data = {}
-                data.update(request.values.items())
-                data.update(request.view_args)
-                logger.info('receive request [{0}] [{1}]: [{2}]'.format(request.method, request.url, data))
-                # check channel
-                channel_name = data.get('channel_name')
-                if channel_name != self.config.CHANNEL_NAME:
-                    is_verify_pass = False
-                else:
-                    # verify sign
-                    lvye_aes_key = self.channel_pri_key.decrypt_from_base64(data['_lvye_aes_key'])
-                    lvye_pub_key = aes.decrypt_from_base64(data['_lvye_pub_key'], lvye_aes_key)
-                    # 主要用来验签
-                    signer = Signer('key', 'sign', self.config.MD5_KEY, None, lvye_pub_key)
-                    sign_type = data['sign_type']
-                    is_verify_pass = signer.verify(data, sign_type)
-            except Exception as e:
-                logger.exception(e)
-                is_verify_pass = False
+        def get_ctx():
+            data = {}
+            data.update(request.values.items())
+            data.update(request.view_args)
 
-            logger.info("[{0}] verify done.".format(request.url))
+            return request.method, request.url, data
+
+        def set_ctx(is_verify_pass, params):
             request.__dict__['is_verify_pass'] = is_verify_pass
-            request.__dict__['params'] = data
-            return f(*args, **kwargs)
-        return wrapper
+            request.__dict__['params'] = params
+
+        return self.verify_request_generic(get_ctx, set_ctx)(f)
 
     def _generate_api_url(self, url, **kwargs):
         url = url.lstrip('/')
