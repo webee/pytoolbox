@@ -74,23 +74,27 @@ class PayClient(object):
         logger.info("[{0}] verify done.".format(url))
         return is_verify_pass
 
-    def verify_request_generic(self, get_ctx, set_ctx=None):
+    def verify_request_generic(self, get_ctx, set_ctx=None, fail_verify_handler=None):
         def verify_request(f):
             @wraps(f)
             def wrapper(*args, **kwargs):
-                method, url, data = get_ctx(*args, **kwargs)
-                is_verify_pass = self._do_verify_request(method, url, data)
+                method, url, params = get_ctx(*args, **kwargs)
+                is_verify_pass = self._do_verify_request(method, url, params)
+
+                if not is_verify_pass and fail_verify_handler:
+                    return fail_verify_handler(params, *args, **kwargs)
+
                 if set_ctx:
-                    set_ctx(is_verify_pass, data)
+                    set_ctx(is_verify_pass, params)
                     return f(*args, **kwargs)
-                return f(is_verify_pass, data, *args, **kwargs)
+                return f(is_verify_pass, params, *args, **kwargs)
             return wrapper
         return verify_request
 
     def verify_request(self, f):
         """ for flask
         """
-        from flask import request
+        from flask import request, jsonify
 
         def get_ctx():
             data = {}
@@ -103,7 +107,10 @@ class PayClient(object):
             request.__dict__['is_verify_pass'] = is_verify_pass
             request.__dict__['params'] = params
 
-        return self.verify_request_generic(get_ctx, set_ctx)(f)
+        def fail_verify_handler(*args, **kwargs):
+            return jsonify(code=1)
+
+        return self.verify_request_generic(get_ctx, set_ctx, fail_verify_handler)(f)
 
     def _generate_api_url(self, url, **kwargs):
         url = url.lstrip('/')
