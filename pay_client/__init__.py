@@ -123,13 +123,12 @@ class PayClient(object):
 
         return params
 
-    def request(self, url, params=None, sign_type=SignType.RSA, method='post'):
-        if params is None:
-            params = {}
+    @staticmethod
+    def is_success_result(result):
+        return _is_success_result(result)
 
-        params.update(extract_query_params(url))
-        params = self._add_sign_to_params(params, sign_type)
-
+    @staticmethod
+    def _do_request(url, params=None, method='get'):
         try:
             logger.info("request {0} {1}: {2}".format(method, url, params))
             req = requests.request(method, url, data=params)
@@ -144,6 +143,15 @@ class PayClient(object):
         except Exception as e:
             logger.exception(e)
         return None
+
+    def request(self, url, params=None, sign_type=SignType.RSA, method='post'):
+        if params is None:
+            params = {}
+
+        params.update(extract_query_params(url))
+        params = self._add_sign_to_params(params, sign_type)
+
+        return self._do_request(url, params, method=method)
 
     def get_req(self, url, params=None):
         return self.request(url, params, method='get')
@@ -187,6 +195,20 @@ class PayClient(object):
 
     def web_checkout_url(self, sn, source=constant.TransactionType.PAYMENT):
         return self._generate_api_url(self.config.WEB_CHECKOUT_URL, source=source, sn=sn)
+
+    def get_payment_info(self, sn, payment_scene):
+        url = self._generate_api_url(self.config.PAYMENT_INFO_URL, sn=sn, payment_scene=payment_scene)
+        return self._do_request(url)
+
+    def get_payment_param(self, sn, vas_name, payment_type):
+        params = {
+            'sn': sn,
+            'vas_name': vas_name,
+            'payment_type': payment_type
+        }
+
+        url = self._generate_api_url(self.config.PAYMENT_PARAM_URL, **params)
+        return self._do_request(url)
 
     def preprepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url="", order_id=None):
         params = {

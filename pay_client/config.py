@@ -24,6 +24,8 @@ class Config:
 
     PREPREPAID_URL = '/biz/preprepaid'
 
+    PAYMENT_INFO_URL = '/biz/payment/{sn}/{pay_scene}/info'
+    PAYMENT_PARAM_URL = '/biz/payment/{sn}/{vas_name}/{pay_type}/param'
     WEB_CHECKOUT_URL = '/checkout/web/{source}/{sn}'
     WEB_ZYT_PAY_URL = '/checkout/web/pay/zyt/{sn}'
 
