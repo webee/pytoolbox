@@ -196,6 +196,10 @@ class PayClient(object):
     def web_checkout_url(self, sn, source=constant.TransactionType.PAYMENT):
         return self._generate_api_url(self.config.WEB_CHECKOUT_URL, source=source, sn=sn)
 
+    def get_payment_result(self, sn):
+        url = self._generate_api_url(self.config.PAYMENT_RESULT_URL, sn=sn)
+        return self._do_request(url)
+
     def get_payment_info(self, sn, payment_scene):
         url = self._generate_api_url(self.config.PAYMENT_INFO_URL, sn=sn, payment_scene=payment_scene)
         return self._do_request(url)
