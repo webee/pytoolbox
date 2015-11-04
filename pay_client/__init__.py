@@ -196,6 +196,9 @@ class PayClient(object):
     def web_checkout_url(self, sn, source=constant.TransactionType.PAYMENT):
         return self._generate_api_url(self.config.WEB_CHECKOUT_URL, source=source, sn=sn)
 
+    def checkout_url(self, sn):
+        return self.config.CHECKOUT_URL.format(sn=sn)
+
     def get_payment_result(self, sn):
         url = self._generate_api_url(self.config.PAYMENT_RESULT_URL, sn=sn)
         return self._do_request(url)
