@@ -20,6 +20,11 @@ def time_offset(t, offset=0):
     return t + d
 
 
+def from_now_offset(offset=0):
+    d = timedelta(seconds=offset)
+    return datetime.utcnow() + d
+
+
 class TzName:
     GMT = 'GMT'
     EST = 'EST'
@@ -71,3 +76,8 @@ def today():
 def utctoday():
     td, n, un = datetime.today(), datetime.now(), datetime.utcnow()
     return datetime(td.year, td.month, td.day) - (n - un)
+
+
+def gmt8now():
+    un = datetime.utcnow()
+    return utc2gmt8(un)
