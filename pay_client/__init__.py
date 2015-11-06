@@ -207,11 +207,11 @@ class PayClient(object):
         url = self._generate_api_url(self.config.PAYMENT_INFO_URL, sn=sn, payment_scene=payment_scene)
         return self._do_request(url)
 
-    def get_payment_param(self, sn, vas_name, payment_type):
+    def get_payment_param(self, sn, payment_scene, vas_name):
         params = {
             'sn': sn,
+            'payment_scene': payment_scene,
             'vas_name': vas_name,
-            'payment_type': payment_type
         }
 
         url = self._generate_api_url(self.config.PAYMENT_PARAM_URL, **params)

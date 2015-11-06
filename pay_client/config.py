@@ -26,7 +26,7 @@ class Config:
 
     PAYMENT_RESULT_URL = '/biz/payment/{sn}/result'
     PAYMENT_INFO_URL = '/biz/payment/{sn}/{payment_scene}/info'
-    PAYMENT_PARAM_URL = '/biz/payment/{sn}/{vas_name}/{payment_type}/param'
+    PAYMENT_PARAM_URL = '/biz/payment/{sn}/{payment_scene}/{vas_name}/param'
     CHECKOUT_URL = 'http://pay.lvye.com/checkout/{sn}'
     WEB_CHECKOUT_URL = '/checkout/web/{source}/{sn}'
     WEB_ZYT_PAY_URL = '/checkout/web/pay/zyt/{sn}'
