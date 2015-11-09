@@ -107,10 +107,7 @@ class PayClient(object):
             request.__dict__['is_verify_pass'] = is_verify_pass
             request.__dict__['params'] = params
 
-        def fail_verify_handler(*args, **kwargs):
-            return jsonify(code=1)
-
-        return self.verify_request_generic(get_ctx, set_ctx, fail_verify_handler)(f)
+        return self.verify_request_generic(get_ctx, set_ctx)(f)
 
     def _generate_api_url(self, url, **kwargs):
         url = url.lstrip('/')
@@ -203,7 +200,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.PAYMENT_RESULT_URL, sn=sn)
         return self._do_request(url)
 
-    def get_payment_info(self, sn, payment_scene):
+    def get_payment_info(self, sn, payment_scene='_'):
         url = self._generate_api_url(self.config.PAYMENT_INFO_URL, sn=sn, payment_scene=payment_scene)
         return self._do_request(url)
 
@@ -216,6 +213,16 @@ class PayClient(object):
 
         url = self._generate_api_url(self.config.PAYMENT_PARAM_URL, **params)
         return self._do_request(url)
+
+    def web_payment_callback(self, sn, result):
+        params = {
+            'sn': sn,
+            'result': result
+        }
+        url = self._generate_api_url(self.config.PAYMENT_CALLBACK_URL)
+
+        params = self._add_sign_to_params(params)
+        return _submit_form(url, params)
 
     def preprepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url="", order_id=None):
         params = {
