@@ -30,7 +30,8 @@ class Config:
     PAYMENT_PARAM_URL = '/biz/payment/{sn}/{payment_scene}/{vas_name}/param'
     CHECKOUT_URL = 'http://pay.lvye.com/checkout/{sn}'
     WEB_CHECKOUT_URL = '/checkout/web/{source}/{sn}'
-    WEB_ZYT_PAY_URL = '/checkout/web/pay/zyt/{sn}'
+
+    ZYT_PAY_URL = '/zyt/pay'
 
     GET_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
     GET_CREATE_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'

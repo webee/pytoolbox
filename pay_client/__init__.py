@@ -224,6 +224,18 @@ class PayClient(object):
         params = self._add_sign_to_params(params)
         return _submit_form(url, params)
 
+    def zyt_pay(self, sn, payer_user_id):
+        params = {
+            'sn': sn,
+            'payer_user_id': payer_user_id,
+        }
+
+        url = self._generate_api_url(self.config.ZYT_PAY_URL)
+        result = self.post_req(url, params)
+        if _is_success_result(result):
+            return result.data['is_success']
+        return None
+
     def preprepaid(self, to_user_id, amount, to_domain_name="", callback_url="", notify_url="", order_id=None):
         params = {
             'to_user_id': to_user_id,
@@ -260,15 +272,6 @@ class PayClient(object):
         sn = self.prepay(params, ret_sn=True)
         if sn is not None:
             return self.web_checkout_url(sn)
-
-    def web_zyt_pay(self, sn):
-        params = {
-            'sn': sn
-        }
-        url = self._generate_api_url(self.config.WEB_ZYT_PAY_URL, **params)
-
-        params = self._add_sign_to_params(params)
-        return _submit_form(url, params)
 
     def confirm_guarantee_payment(self, order_id, ret_result=False):
         params = {
