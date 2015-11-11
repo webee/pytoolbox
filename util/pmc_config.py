@@ -211,9 +211,9 @@ def _safe_del_attr(mod, name):
 def _get_env_name(name=ENV_VAR_NAME, mapping=None, env=None):
     if env is None:
         env = os.getenv(ENV_VAR_NAME, DEFAULT_ENV)
-        if name is not None:
-            env = os.getenv('{0}_ENV'.format(name.upper()), env)
-        env = _envs_mapping.get(env, env)
+    if name is not None:
+        env = os.getenv('{0}_ENV'.format(name.upper()), env)
+    env = _envs_mapping.get(env, env)
 
     if mapping is None:
         return env
