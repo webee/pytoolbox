@@ -204,7 +204,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.PAYMENT_INFO_URL, sn=sn, payment_scene=payment_scene)
         return self._do_request(url)
 
-    def get_payment_param(self, sn, payment_scene, vas_name):
+    def get_payment_param(self, sn, payment_scene, vas_name, extra_params=None):
         params = {
             'sn': sn,
             'payment_scene': payment_scene,
@@ -212,6 +212,8 @@ class PayClient(object):
         }
 
         url = self._generate_api_url(self.config.PAYMENT_PARAM_URL, **params)
+        if extra_params:
+            url = build_url(url, **extra_params)
         return self._do_request(url)
 
     def web_payment_callback(self, sn, result):
