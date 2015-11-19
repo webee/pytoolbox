@@ -133,7 +133,7 @@ class PayClient(object):
                 if req.status_code != 200:
                     logger.warn('failed request result: [{0}], [{1}]'.format(req.status_code, req.text))
                 logger.debug('request result: [{0}], [{1}]'.format(req.status_code, req.text))
-                return Result(req.status_code, req.json())
+                return Result(req.status_code, req.json(use_decimal=True))
             except Exception as e:
                 logger.exception(e)
                 return None
