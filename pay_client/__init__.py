@@ -270,6 +270,20 @@ class PayClient(object):
             return result.data['pay_url']
         return None
 
+    def prepay_channel_order(self, order_id, order_channel=None, ret_sn=False):
+        params = {
+            'order_channel': order_channel or self.config.CHANNEL_NAME,
+            'order_id': order_id
+        }
+
+        url = self._generate_api_url(self.config.PREPAY_CHANNEL_ORDER_URL, **params)
+        result = self.get_req(url, params)
+        if _is_success_result(result):
+            if ret_sn:
+                return result.data['sn']
+            return result.data['pay_url']
+        return None
+
     def pay_web_checkout_url(self, params):
         sn = self.prepay(params, ret_sn=True)
         if sn is not None:

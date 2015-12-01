@@ -10,6 +10,7 @@ class Config:
     ROOT_URL = "http://pay.lvye.com/api/__"
     QUERY_USER_IS_OPENED_URL = "/user_mapping/users/{user_id}/is_opened"
     PREPAY_URL = '/biz/prepay'
+    PREPAY_CHANNEL_ORDER_URL = '/biz/prepay/{order_channel}/{order_id}/'
     CONFIRM_GUARANTEE_PAYMENT_URL = '/biz/pay/guarantee_payment/confirm'
     REFUND_URL = '/biz/refund'
     WITHDRAW_URL = '/biz/users/{user_id}/withdraw'
