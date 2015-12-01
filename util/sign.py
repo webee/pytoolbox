@@ -17,7 +17,8 @@ class SignType:
 
 class Signer(object):
     def __init__(self, md5_key_param_name='key', sign_key_name='sign', md5_key=None, pri_key=None, pub_key=None,
-                 is_inner_key='_is_inner', ignore_case=True, use_uppercase=False):
+                 is_inner_key='_is_inner', ignore_case=True, use_uppercase=False,
+                 ignore_keys=set(), include_keys=set()):
         """
         :param md5_key_param_name: md5_key本身是要参与签名的，此为生成原始字符串时其参数名
         :param sign_key_name: 签名参数名
@@ -40,6 +41,10 @@ class Signer(object):
         self.is_inner_key = is_inner_key
         self.ignore_case = ignore_case
         self.use_uppercase = use_uppercase
+        self.ignore_keys = set(ignore_keys)
+        self.ignore_keys.add(self.sign_key_name)
+
+        self.include_keys = set(include_keys)
 
     def init(self, md5_key=None, pri_key=None, pub_key=None):
         self.md5_key = md5_key
@@ -94,7 +99,7 @@ class Signer(object):
         return self._verify_rsa(src, self.pri_key_obj.gen_public_key(), signed)
 
     def _is_valid_item(self, k, v):
-        return k and k != self.sign_key_name and k[0] != '_' \
+        return k and k not in self.ignore_keys and (k in self.include_keys or k[0] != '_') \
                and v is not None and v != '' and not isinstance(v, (dict, list))
 
     def _gen_sign_data(self, data):
@@ -110,7 +115,10 @@ class Signer(object):
         return '&'.join(values)
 
     def _sign_md5(self, src, key, key_param_name):
-        src = src + '&{0}={1}'.format(key_param_name, key)
+        if key_param_name is None:
+            src = src + key
+        else:
+            src = src + '&{0}={1}'.format(key_param_name, key)
         src = src.encode('utf-8')
         s = md5(src).hexdigest()
         if self.use_uppercase:
