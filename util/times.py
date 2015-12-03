@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, tzinfo, timedelta
+from datetime import date, datetime, tzinfo, timedelta
 import time
 
 
@@ -69,8 +69,7 @@ def utc2timestamp(t):
 
 
 def today():
-    td = datetime.today()
-    return datetime(td.year, td.month, td.day)
+    return date.today()
 
 
 def utctoday():
@@ -81,3 +80,93 @@ def utctoday():
 def gmt8now():
     un = datetime.utcnow()
     return utc2gmt8(un)
+
+
+def date_seq(f=-1, t=0, d=1):
+    td = date.today()
+    fdt = td + timedelta(days=f)
+    tdt = td + timedelta(days=t)
+
+    ddt = timedelta(days=d)
+    while fdt < tdt:
+        yield fdt
+        fdt = fdt + ddt
+
+
+def weekdays(s=0):
+    """
+    :param s: which weekdays, s=0, this weekdays, s=-1, last weekdyas.
+    :return:
+    """
+    td = date.today()
+    w = td.weekday()
+
+    f = -w + s * 7
+
+    return date_seq(f, f+7)
+
+
+def get_month_days_by_date(dt):
+    next_month_day = dt + timedelta(days=31 - (dt.day - 1))
+    this_month_last_day = next_month_day - timedelta(days=next_month_day.day)
+    return this_month_last_day.day
+
+
+def get_month_first_date(s=0):
+    td = date.today()
+    td = td - timedelta(days=td.day-1)
+
+    x = 0
+    while x != s:
+        if x < s:
+            td = td + timedelta(days=31)
+            x += 1
+        else:
+            td = td - timedelta(days=td.day)
+            x -= 1
+        td = td - timedelta(days=td.day-1)
+
+    return td
+
+
+def monthdays(s=0):
+    td = date.today()
+    that_month_first_date = get_month_first_date(s)
+
+    f = (that_month_first_date - td).days
+    days = get_month_days_by_date(that_month_first_date)
+
+    return date_seq(f, f+days)
+
+
+def last_days(n=1):
+    return date_seq(-n)
+
+
+def next_days(n=1):
+    return date_seq(1, 1+n)
+
+
+def last_weekdays():
+    return weekdays(-1)
+
+
+def this_weekdays():
+    return weekdays(0)
+
+
+def next_weekdays():
+    return weekdays(1)
+
+
+def last_monthdays():
+    return monthdays(-1)
+
+
+def this_monthdays():
+    return monthdays(0)
+
+
+def next_monthdays():
+    return monthdays(1)
+
