@@ -128,6 +128,9 @@ class Signer(object):
     def _verify_md5(self, src, key, signed, key_param_name):
         return signed == self._sign_md5(src, key, key_param_name)
 
+    def sign_rsa(self, src):
+        return self._sign_rsa(src, self.pri_key_obj)
+
     @staticmethod
     def _sign_rsa(src, key):
         """ 私钥签名
