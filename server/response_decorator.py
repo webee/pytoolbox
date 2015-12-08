@@ -11,9 +11,13 @@ def compatible(os, version_range, response_handler):
     def func_decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            app_os = request.headers.get('OS', 'iOS')
+            app_os = request.headers.get('OS')
             app_version = request.headers.get('AppVersion')
+
             resp = func(*args, **kwargs)
+
+            if app_os is None or app_version is None:
+                return
 
             processor = CompatibleResponseProcessor(app_os, app_version, resp)
             return processor.process(os, version_range, response_handler).response
@@ -27,11 +31,13 @@ def deprecated(os, version_range):
     def func_decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            app_os = request.headers.get('OS', 'iOS')
+            app_os = request.headers.get('OS')
             app_version = request.headers.get('AppVersion')
-            version = Version(app_os, app_version)
-            if version.in_range(os, version_range):
-                return response.gone()
+
+            if app_os is not None and app_version is not None:
+                version = Version(app_os, app_version)
+                if version.in_range(os, version_range):
+                    return response.gone()
 
             return func(*args, **kwargs)
 
