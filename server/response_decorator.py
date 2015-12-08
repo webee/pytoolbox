@@ -17,7 +17,7 @@ def compatible(os, version_range, response_handler):
             resp = func(*args, **kwargs)
 
             if app_os is None or app_version is None:
-                return
+                return resp
 
             processor = CompatibleResponseProcessor(app_os, app_version, resp)
             return processor.process(os, version_range, response_handler).response
