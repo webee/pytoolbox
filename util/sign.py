@@ -155,6 +155,7 @@ class Signer(object):
         :param key: 公钥
         :return:
         """
+        src = src.encode('utf-8')
         if sign_type == RSASignType.SHA:
-            return key.verify_sha_from_base64(src.encode('utf-8'), signed, urlsafe=urlsafe)
-        return key.verify_md5_from_base64(src.encode('utf-8'), signed, urlsafe=urlsafe)
+            return key.verify_sha_from_base64(src, signed, urlsafe=urlsafe)
+        return key.verify_md5_from_base64(src, signed, urlsafe=urlsafe)
