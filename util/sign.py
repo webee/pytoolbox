@@ -102,7 +102,7 @@ class Signer(object):
         src = self._gen_sign_data(data)
 
         if not is_inner:
-            return self._verify_rsa(src, self.pub_key_obj, signed)
+            return self._verify_rsa(src, self.pub_key_obj, signed, sign_type=sign_type, urlsafe=urlsafe)
         # 只要is_inner_key传了，且不为空
         return self._verify_rsa(src, self.pri_key_obj.gen_public_key(), signed, sign_type=sign_type, urlsafe=urlsafe)
 
