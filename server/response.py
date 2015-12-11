@@ -34,8 +34,8 @@ def no_content():
     return _response(204)
 
 
-def forbidden():
-    return _response(403)
+def forbidden(message):
+    return _response(403, {'error': message})
 
 
 def not_found(params=None):
