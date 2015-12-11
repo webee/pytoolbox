@@ -15,6 +15,11 @@ class SignType:
     RSA = 'RSA'
 
 
+class RSASignType:
+    SHA = 'SHA'
+    MD5 = 'MD5'
+
+
 class Signer(object):
     def __init__(self, md5_key_param_name='key', sign_key_name='sign', md5_key=None, pri_key=None, pub_key=None,
                  is_inner_key='_is_inner', ignore_case=True, use_uppercase=False,
@@ -56,21 +61,24 @@ class Signer(object):
     def md5_sign(self, data):
         return self._sign_md5_data(data)
 
-    def rsa_sign(self, data):
-        return self._sign_rsa_data(data)
+    def rsa_sign(self, data, sign_type=RSASignType.MD5, urlsafe=False):
+        return self._sign_rsa_data(data, sign_type=sign_type, urlsafe=urlsafe)
 
-    def sign(self, data, sign_type):
+    def sign_rsa(self, src, rsa_sign_type=RSASignType.MD5, urlsafe=False):
+        return self._sign_rsa(src, self.pri_key_obj, sign_type=rsa_sign_type, urlsafe=urlsafe)
+
+    def sign(self, data, sign_type, rsa_sign_type=RSASignType.MD5, urlsafe=False):
         if sign_type == SignType.MD5:
             return self._sign_md5_data(data)
         elif sign_type == SignType.RSA:
-            return self._sign_rsa_data(data)
+            return self._sign_rsa_data(data, sign_type=rsa_sign_type, urlsafe=urlsafe)
         raise UnknownSignTypeError(sign_type)
 
-    def verify(self, data, sign_type):
+    def verify(self, data, sign_type, rsa_sign_type=RSASignType.MD5, urlsafe=False):
         if sign_type == SignType.MD5:
             return self._verify_md5_data(data, self.md5_key)
         elif sign_type == SignType.RSA:
-            return self._verify_rsa_data(data)
+            return self._verify_rsa_data(data, sign_type=rsa_sign_type, urlsafe=urlsafe)
         raise UnknownSignTypeError(sign_type)
 
     def _sign_md5_data(self, data):
@@ -83,12 +91,12 @@ class Signer(object):
 
         return self._verify_md5(src, key, signed, self.md5_key_param_name)
 
-    def _sign_rsa_data(self, data):
+    def _sign_rsa_data(self, data, sign_type=RSASignType.MD5, urlsafe=False):
         src = self._gen_sign_data(data)
 
-        return self._sign_rsa(src, self.pri_key_obj)
+        return self._sign_rsa(src, self.pri_key_obj, sign_type=sign_type, urlsafe=urlsafe)
 
-    def _verify_rsa_data(self, data):
+    def _verify_rsa_data(self, data, sign_type=RSASignType.MD5, urlsafe=False):
         is_inner = data.get(self.is_inner_key)
         signed = data.get(self.sign_key_name)
         src = self._gen_sign_data(data)
@@ -96,7 +104,7 @@ class Signer(object):
         if not is_inner:
             return self._verify_rsa(src, self.pub_key_obj, signed)
         # 只要is_inner_key传了，且不为空
-        return self._verify_rsa(src, self.pri_key_obj.gen_public_key(), signed)
+        return self._verify_rsa(src, self.pri_key_obj.gen_public_key(), signed, sign_type=sign_type, urlsafe=urlsafe)
 
     def _is_valid_item(self, k, v):
         return k and k not in self.ignore_keys and (k in self.include_keys or k[0] != '_') \
@@ -128,24 +136,25 @@ class Signer(object):
     def _verify_md5(self, src, key, signed, key_param_name):
         return signed == self._sign_md5(src, key, key_param_name)
 
-    def sign_rsa(self, src):
-        return self._sign_rsa(src, self.pri_key_obj)
-
     @staticmethod
-    def _sign_rsa(src, key):
+    def _sign_rsa(src, key, sign_type=RSASignType.MD5, urlsafe=False):
         """ 私钥签名
         :param src: 数据字符串
         :param key: 私钥
         :return:
         """
         src = src.encode('utf-8')
-        return key.sign_md5_to_base64(src)
+        if sign_type == RSASignType.SHA:
+            return key.sign_sha_to_base64(src, urlsafe=urlsafe)
+        return key.sign_md5_to_base64(src, urlsafe=urlsafe)
 
     @staticmethod
-    def _verify_rsa(src, key, signed):
+    def _verify_rsa(src, key, signed, sign_type=RSASignType.MD5, urlsafe=False):
         """ 公钥验签
         :param src: 数据字符串
         :param key: 公钥
         :return:
         """
-        return key.verify_md5_from_base64(src.encode('utf-8'), signed)
+        if sign_type == RSASignType.SHA:
+            return key.verify_sha_from_base64(src.encode('utf-8'), signed, urlsafe=urlsafe)
+        return key.verify_md5_from_base64(src.encode('utf-8'), signed, urlsafe=urlsafe)

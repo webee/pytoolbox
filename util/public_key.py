@@ -51,7 +51,9 @@ class Key(object):
 
         return self._signer.sign(h)
 
-    def sign_sha_to_base64(self, data):
+    def sign_sha_to_base64(self, data, urlsafe=False):
+        if urlsafe:
+            return base64.urlsafe_b64encode(self.sign_sha(data))
         return base64.b64encode(self.sign_sha(data))
 
     def verify_sha(self, data, signature):
@@ -60,7 +62,9 @@ class Key(object):
 
         return self._signer.verify(h, signature)
 
-    def verify_sha_from_base64(self, data, signature):
+    def verify_sha_from_base64(self, data, signature, urlsafe=False):
+        if urlsafe:
+            return self.verify_sha(data, base64.urlsafe_b64decode(signature))
         return self.verify_sha(data, base64.b64decode(signature))
 
     def sign_md5(self, data):
@@ -70,8 +74,10 @@ class Key(object):
 
         return self._signer.sign(h)
 
-    def sign_md5_to_base64(self, data):
+    def sign_md5_to_base64(self, data, urlsafe=False):
         """对数据先进行md5 hash，再用私钥签名, 并用base64编码结果"""
+        if urlsafe:
+            return base64.urlsafe_b64encode(self.sign_md5(data))
         return base64.b64encode(self.sign_md5(data))
 
     def verify_md5(self, data, signature):
@@ -81,8 +87,10 @@ class Key(object):
 
         return self._signer.verify(h, signature)
 
-    def verify_md5_from_base64(self, data, signature):
+    def verify_md5_from_base64(self, data, signature, urlsafe=False):
         """用公钥验签进base64编码的签名"""
+        if urlsafe:
+            return self.verify_md5(data, base64.urlsafe_b64decode(signature))
         return self.verify_md5(data, base64.b64decode(signature))
 
     def encrypt(self, data):
