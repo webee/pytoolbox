@@ -40,11 +40,14 @@ def _submit_form(url, req_params, method='POST'):
 class PayClient(object):
     constant = constant
 
-    def __init__(self):
+    def __init__(self, env_config=None):
         self.config = Config()
         self.signer = Signer('key', 'sign')
         self.channel_pri_key = None
         self._uid_accounts = {}
+
+        if env_config is not None:
+            self.init_config(env_config)
 
     def init_config(self, env_config):
         pmc_config.merge_config(self.config, env_config)
