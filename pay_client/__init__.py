@@ -45,6 +45,7 @@ class PayClient(object):
         self.signer = Signer('key', 'sign')
         self.channel_pri_key = None
         self._uid_accounts = {}
+        self._accepted_channel_clients = {}
 
         if env_config is not None:
             self.init_config(env_config)
@@ -55,19 +56,33 @@ class PayClient(object):
         self.signer.init(self.config.MD5_KEY, self.config.CHANNEL_PRI_KEY, None)
         self.channel_pri_key = public_key.loads_b64encoded_key(self.config.CHANNEL_PRI_KEY)
 
+    def setup_accepted_clients(self, clients):
+        for client in clients:
+            self._accepted_channel_clients[client.config.CHANNEL_NAME] = client
+
+    def _get_current_client(self, channel_name):
+        client = self
+        if self._accepted_channel_clients:
+            client = self._accepted_channel_clients.get(channel_name)
+        if channel_name != client.config.CHANNEL_NAME:
+            return None
+        return client
+
     def _do_verify_request(self, method, url, data):
         try:
             logger.info('receive request [{0}] [{1}]: [{2}]'.format(method, url, data))
             # check channel
             channel_name = data.get('channel_name')
-            if channel_name != self.config.CHANNEL_NAME:
+            # find the correct client
+            client = self._get_current_client(channel_name)
+            if client is None or channel_name != client.config.CHANNEL_NAME:
                 is_verify_pass = False
             else:
                 # verify sign
-                lvye_aes_key = self.channel_pri_key.decrypt_from_base64(data['_lvye_aes_key'])
+                lvye_aes_key = client.channel_pri_key.decrypt_from_base64(data['_lvye_aes_key'])
                 lvye_pub_key = aes.decrypt_from_base64(data['_lvye_pub_key'], lvye_aes_key)
                 # 主要用来验签
-                signer = Signer('key', 'sign', self.config.MD5_KEY, None, lvye_pub_key)
+                signer = Signer('key', 'sign', client.config.MD5_KEY, None, lvye_pub_key)
                 sign_type = data['sign_type']
                 is_verify_pass = signer.verify(data, sign_type)
         except Exception as e:
