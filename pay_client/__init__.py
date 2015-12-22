@@ -367,7 +367,7 @@ class PayClient(object):
             return result.data['data']
         return None
 
-    def list_transactions(self, user_id, role, page_no, page_size, q):
+    def list_transactions(self, user_id, role, page_no, page_size, vas_name, q):
         url = self._generate_api_url(self.config.LIST_USER_TRANSACTIONS_URL, user_id=user_id)
 
         params = {
@@ -377,6 +377,8 @@ class PayClient(object):
         }
         if q:
             params['q'] = q
+        if vas_name:
+            params['vas_name'] = vas_name
 
         url = build_url(url, **params)
 
