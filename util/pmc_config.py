@@ -27,6 +27,11 @@ import os
 import re
 import inspect
 from types import ModuleType, FunctionType
+try:
+    from types import ClassType
+except:
+    ClassType = type
+
 from .log import get_logger
 
 logger = get_logger(__name__)
@@ -141,7 +146,7 @@ def _is_valid_config_member(mod, n):
 def _is_class(v):
     """只接受classobj类型的简单类"""
     # return inspect.isclass(v)
-    return isinstance(v, type)
+    return isinstance(v, (ClassType, type))
 
 
 def merge_config(target_config, src_config):
