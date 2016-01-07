@@ -82,7 +82,7 @@ def register_config(parent_or_config, name=None, env=DEFAULT_ENV, mapping=None):
             logger.warn("config not found: [{0}.{1}]".format(config_package.__name__, env_name))
         _safe_del_attr(config_package, env_name)
     # remove none-config vars.
-    _remove_none_config_vars(config_package)
+    _remove_none_config_vars(config_package, prefix=_get_mod_name(config_package))
     # add to configs parent.
     configs_parent = _get_parent_module(config_package)
     setattr(configs_parent, '__pmc_configs__', {})
@@ -127,16 +127,15 @@ def _get_value(m, n):
     return getattr(m, n) if hasattr(m, n) else None
 
 
-def _is_valid_config_member(mod, n):
+def _is_valid_config_member(mod, n, prefix=None):
     """ config items can be Camel Named [Class, Module, dict] and other upper case named data types.
     :param mod: where var n in.
     :param n: var name.
     :return:
     """
-    prefix = _get_mod_name(mod)
     v = _get_value(mod, n)
     if _is_class(v):
-        if _get_mod_name(v) != prefix:
+        if prefix is not None and not str(_get_mod_name(v)).startswith(prefix):
             return None
         return _is_camel_name(n)
     elif _is_camel_name(n):
@@ -163,7 +162,8 @@ def _register_config(config_package, config_mod):
     :param config_mod:
     :return:
     """
-    for x in [i for i in dir(config_mod) if _is_valid_config_member(config_mod, i)]:
+    prefix = _get_mod_name(config_package)
+    for x in [i for i in dir(config_mod) if _is_valid_config_member(config_mod, i, prefix=prefix)]:
         v = getattr(config_mod, x)
         _merge_config_value(config_package, x, v, fromp=config_mod.__name__)
 
@@ -208,15 +208,15 @@ def _get_mod_name(x):
     return None
 
 
-def _remove_none_config_vars(config_package):
+def _remove_none_config_vars(config_package, prefix=None):
     for x in [_ for _ in dir(config_package) if _[0].isalpha()]:
         v = getattr(config_package, x)
         # keep modules
-        if not _is_valid_config_member(config_package, x):
+        if not _is_valid_config_member(config_package, x, prefix=prefix):
             delattr(config_package, x)
             continue
         if _is_class(v) or isinstance(v, ModuleType):
-            _remove_none_config_vars(v)
+            _remove_none_config_vars(v, prefix=prefix)
 
 
 def _safe_del_attr(mod, name):
