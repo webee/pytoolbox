@@ -476,6 +476,7 @@ class PayClient(object):
         result = self.get_req(url, params)
 
         if _is_success_result(result):
+            logger.info("balance: {0} => {1}".format(user_id, result.data['data']))
             return result.data['data']
         return {'total': Decimal(0), 'available': Decimal(0), 'frozen': Decimal(0)}
 
