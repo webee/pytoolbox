@@ -133,8 +133,11 @@ def _is_valid_config_member(mod, n):
     :param n: var name.
     :return:
     """
+    prefix = _get_mod_name(mod)
     v = _get_value(mod, n)
     if _is_class(v):
+        if _get_mod_name(v) != prefix:
+            return None
         return _is_camel_name(n)
     elif _is_camel_name(n):
         return isinstance(v, (ModuleType, dict))
@@ -195,6 +198,14 @@ def _merge_config_value(config_package, x, v, fromp=None):
     if not hasattr(config_package, '__members__'):
         setattr(config_package, '__members__', {})
     config_package.__members__[x] = {'value': v, 'from': fromp}
+
+
+def _get_mod_name(x):
+    if isinstance(x, ModuleType):
+        return x.__name__
+    if _is_class(x):
+        return x.__module__
+    return None
 
 
 def _remove_none_config_vars(config_package):
