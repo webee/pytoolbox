@@ -179,7 +179,7 @@ def _merge_config_value(config_package, x, v, fromp=None):
     """
     if not hasattr(config_package, x):
         logger.warn('[{0}] has no attr [{1}]'.format(config_package.__name__, x))
-        logger.warn('[invalid config name [{1}]'.format(x))
+        logger.warn('invalid config name [{0}]'.format(x))
     else:
         orig_v = getattr(config_package, x)
         if _is_class(orig_v) and _is_class(v):
