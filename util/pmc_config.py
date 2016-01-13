@@ -250,7 +250,7 @@ def get_project_root(from_path=None, target='src'):
     if __project_root is None:
         from_path = from_path or runtime.current_file() or __file__
         src_path = _find_target_path(from_path, target)
-        __project_root = os.getenv('PROJ_ROOT', dirname(src_path))
+        __project_root = dirname(src_path)
 
     return __project_root
 
