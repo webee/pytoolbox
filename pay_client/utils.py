@@ -36,6 +36,6 @@ def which_to_return(func):
             return result
 
         if is_success_result(result):
-            return result.data['data']
+            return result.data
         return None
     return wrapper

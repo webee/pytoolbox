@@ -477,5 +477,14 @@ class PayClient(object):
             'sn': sn
         }
 
-        url = self._generate_api_url(self.config.APP_CANCEL_CHEQUE_URL, **params)
+        url = self._generate_api_url(self.config.APP_CANCEL_CHEQUE_URL, user_id=user_id)
         return self.post_req(url, params)
+
+    @which_to_return
+    def app_list_cheque(self, user_id):
+        params = {
+            'user_id': user_id
+        }
+
+        url = self._generate_api_url(self.config.APP_LIST_CHEQUE_URL, user_id=user_id)
+        return self.get_req(url, params=params)

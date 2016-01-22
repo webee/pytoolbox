@@ -17,6 +17,7 @@ class Config:
     APP_DRAW_CHEQUE_URL = '/application/users/{user_id}/cheque/draw'
     APP_CASH_CHEQUE_URL = '/application/users/{user_id}/cheque/cash'
     APP_CANCEL_CHEQUE_URL = '/application/users/{user_id}/cheque/cancel'
+    APP_LIST_CHEQUE_URL = '/application/users/{user_id}/cheque/list'
 
     APP_WITHDRAW_URL = '/application/users/{user_id}/withdraw'
     APP_QUERY_WITHDRAW_URL = '/application/users/{user_id}/withdraw/{sn}'
