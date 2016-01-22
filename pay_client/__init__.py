@@ -1,40 +1,22 @@
 # coding=utf-8
 from __future__ import unicode_literals
-from functools import wraps
+
+from collections import namedtuple
 from decimal import Decimal
+from functools import wraps
 
 import os
 import requests
-from collections import namedtuple
-from ..util.sign import SignType, Signer
+from . import constant
+from .utils import is_success_result, submit_form, which_to_return
+from .config import Config
 from ..util import pmc_config, public_key, aes
 from ..util.log import get_logger
+from ..util.sign import SignType, Signer
 from ..util.urls import build_url, extract_query_params
-from .config import Config
-from . import constant
-
 
 logger = get_logger(__name__)
 Result = namedtuple('Result', 'status_code, data')
-
-
-def _is_success_result(result):
-    if result is None:
-        return False
-    ret = result.data['ret']
-    if not ret:
-        logger.warn("failed result: code: {0}, msg: {1}, data: {2}".format(result.data['code'],
-                                                                           result.data['msg'], result.data))
-    return ret
-
-
-def _submit_form(url, req_params, method='POST'):
-    submit_page = '<form id="formName" action="{0}" method="{1}">'.format(url, method)
-    for key in req_params:
-        submit_page += '''<input type="hidden" name="{0}" value='{1}' />'''.format(key, req_params[key])
-    submit_page += '<input type="submit" value="Submit" style="display:none" /></form>'
-    submit_page += '<script>document.forms["formName"].submit();</script>'
-    return submit_page
 
 
 class PayClient(object):
@@ -111,8 +93,9 @@ class PayClient(object):
 
     def verify_request(self, f):
         """ for flask
+        :param f:
         """
-        from flask import request, jsonify
+        from flask import request
 
         def get_ctx():
             data = {}
@@ -140,7 +123,7 @@ class PayClient(object):
 
     @staticmethod
     def is_success_result(result):
-        return _is_success_result(result)
+        return is_success_result(result)
 
     @staticmethod
     def _do_request(url, params=None, method='get'):
@@ -182,7 +165,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.QUERY_USER_IS_OPENED_URL, **params)
 
         result = self.get_req(url, params)
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['is_opened']
         return False
 
@@ -193,7 +176,7 @@ class PayClient(object):
             }
             url = self._generate_api_url(self.config.GET_ACCOUNT_USER_URL, **params)
             result = self.get_req(url, params)
-            if _is_success_result(result):
+            if is_success_result(result):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
@@ -204,7 +187,7 @@ class PayClient(object):
             }
             url = self._generate_api_url(self.config.GET_CREATE_ACCOUNT_USER_URL, **params)
             result = self.post_req(url, params)
-            if _is_success_result(result):
+            if is_success_result(result):
                 self._uid_accounts[user_id] = result.data['account_user_id']
         return self._uid_accounts.get(user_id)
 
@@ -242,7 +225,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.PAYMENT_CALLBACK_URL)
 
         params = self._add_sign_to_params(params)
-        return _submit_form(url, params)
+        return submit_form(url, params)
 
     def zyt_pay(self, sn, payer_user_id):
         params = {
@@ -252,7 +235,7 @@ class PayClient(object):
 
         url = self._generate_api_url(self.config.ZYT_PAY_URL)
         result = self.post_req(url, params)
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['is_success']
         return None
 
@@ -269,7 +252,7 @@ class PayClient(object):
 
         url = self._generate_api_url(self.config.PREPREPAID_URL)
         result = self.post_req(url, params)
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['sn']
         return None
 
@@ -282,7 +265,7 @@ class PayClient(object):
         params = dict(params)
         url = self._generate_api_url(self.config.PREPAY_URL)
         result = self.post_req(url, params)
-        if _is_success_result(result):
+        if is_success_result(result):
             if ret_sn:
                 return result.data['sn']
             return result.data['pay_url']
@@ -296,7 +279,7 @@ class PayClient(object):
 
         url = self._generate_api_url(self.config.PREPAY_CHANNEL_ORDER_URL, **params)
         result = self.get_req(url, params)
-        if _is_success_result(result):
+        if is_success_result(result):
             if ret_sn:
                 return result.data['sn']
             return result.data['pay_url']
@@ -318,7 +301,7 @@ class PayClient(object):
         if ret_result:
             return result
 
-        return _is_success_result(result)
+        return is_success_result(result)
 
     def refund(self, order_id=None, amount=None, notify_url=None, params=None, ret_result=False):
         if params is None:
@@ -335,36 +318,8 @@ class PayClient(object):
         if ret_result:
             return result
 
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['sn']
-        return None
-
-    def withdraw(self, user_id, params, ret_result=False):
-        params = dict(params)
-        params['user_id'] = user_id
-
-        url = self._generate_api_url(self.config.WITHDRAW_URL, user_id=user_id)
-        result = self.post_req(url, params)
-        if ret_result:
-            return result
-
-        if _is_success_result(result):
-            return result.data
-        return None
-
-    def query_withdraw(self, user_id, sn, ret_result=False):
-        params = {
-            'user_id': user_id,
-            'sn': sn
-        }
-
-        url = self._generate_api_url(self.config.QUERY_WITHDRAW_URL, **params)
-        result = self.get_req(url, params)
-        if ret_result:
-            return result
-
-        if _is_success_result(result):
-            return result.data['data']
         return None
 
     def list_transactions(self, user_id, role, page_no, page_size, vas_name, q):
@@ -385,7 +340,7 @@ class PayClient(object):
         params['user_id'] = user_id
         result = self.get_req(url, params)
 
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['data']
         return None
 
@@ -396,7 +351,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.APP_QUERY_BIN_URL, **params)
 
         result = self.get_req(url, params)
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['data']
         return None
 
@@ -409,7 +364,7 @@ class PayClient(object):
         if ret_result:
             return result
 
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['id']
         return None
 
@@ -422,7 +377,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.APP_UNBIND_BANKCARD_URL, **params)
         result = self.post_req(url, params)
 
-        return _is_success_result(result)
+        return is_success_result(result)
 
     def app_get_user_bankcard(self, user_id, bankcard_id):
         params = {'user_id': user_id, 'bankcard_id': bankcard_id}
@@ -430,7 +385,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.APP_GET_USER_BANKCARD_URL, **params)
         result = self.get_req(url, params)
 
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['data']
         return None
 
@@ -440,7 +395,7 @@ class PayClient(object):
         url = self._generate_api_url(self.config.APP_LIST_USER_BANKCARDS_URL, **params)
         result = self.get_req(url, params)
 
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data['data']
         return None
 
@@ -464,8 +419,23 @@ class PayClient(object):
         if ret_result:
             return result
 
-        if _is_success_result(result):
+        if is_success_result(result):
             return result.data
+        return None
+
+    def app_query_withdraw(self, user_id, sn, ret_result=False):
+        params = {
+            'user_id': user_id,
+            'sn': sn
+        }
+
+        url = self._generate_api_url(self.config.APP_QUERY_WITHDRAW_URL, **params)
+        result = self.get_req(url, params)
+        if ret_result:
+            return result
+
+        if is_success_result(result):
+            return result.data['data']
         return None
 
     def app_query_user_balance(self, user_id):
@@ -475,10 +445,37 @@ class PayClient(object):
         url = self._generate_api_url(self.config.APP_QUERY_USER_BALANCE_URL, **params)
         result = self.get_req(url, params)
 
-        if _is_success_result(result):
+        if is_success_result(result):
             logger.info("balance: {0} => {1}".format(user_id, result.data['data']))
             return result.data['data']
         return {'total': Decimal(0), 'available': Decimal(0), 'frozen': Decimal(0)}
 
     def app_query_user_available_balance(self, user_id):
         return self.app_query_user_balance(user_id)['available']
+
+    @which_to_return
+    def app_draw_cheque(self, user_id, params):
+        params['user_id'] = user_id
+
+        url = self._generate_api_url(self.config.APP_DRAW_CHEQUE_URL, user_id=user_id)
+        return self.post_req(url, params)
+
+    @which_to_return
+    def app_cash_cheque(self, user_id, cash_token):
+        params = {
+            'user_id': user_id,
+            'cash_token': cash_token
+        }
+
+        url = self._generate_api_url(self.config.APP_CASH_CHEQUE_URL, **params)
+        return self.post_req(url, params)
+
+    @which_to_return
+    def app_cancel_cheque(self, user_id, sn):
+        params = {
+            'user_id': user_id,
+            'sn': sn
+        }
+
+        url = self._generate_api_url(self.config.APP_CANCEL_CHEQUE_URL, **params)
+        return self.post_req(url, params)

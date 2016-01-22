@@ -13,9 +13,13 @@ class Config:
     PREPAY_CHANNEL_ORDER_URL = '/biz/prepay/{order_channel}/{order_id}/'
     CONFIRM_GUARANTEE_PAYMENT_URL = '/biz/pay/guarantee_payment/confirm'
     REFUND_URL = '/biz/refund'
-    WITHDRAW_URL = '/biz/users/{user_id}/withdraw'
-    QUERY_WITHDRAW_URL = '/biz/users/{user_id}/withdraw/{sn}'
+
+    APP_DRAW_CHEQUE_URL = '/application/users/{user_id}/cheque/draw'
+    APP_CASH_CHEQUE_URL = '/application/users/{user_id}/cheque/cash'
+    APP_CANCEL_CHEQUE_URL = '/application/users/{user_id}/cheque/cancel'
+
     APP_WITHDRAW_URL = '/application/users/{user_id}/withdraw'
+    APP_QUERY_WITHDRAW_URL = '/application/users/{user_id}/withdraw/{sn}'
     APP_QUERY_BIN_URL = '/application/bankcard/{card_no}/bin'
     APP_BIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/bind'
     APP_UNBIND_BANKCARD_URL = '/application/users/{user_id}/bankcards/{bankcard_id}/unbind'
