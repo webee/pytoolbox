@@ -1,6 +1,9 @@
 # coding=utf-8
 from functools import wraps
-from pay_client import logger
+from ..util.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def is_success_result(result):
