@@ -488,3 +488,17 @@ class PayClient(object):
 
         url = self._generate_api_url(self.config.APP_LIST_CHEQUE_URL, user_id=user_id)
         return self.get_req(url, params=params)
+
+    @which_to_return
+    def user_transfer(self, user_id, to_user_domain_name, to_user_id, amount, info='', order_id=''):
+        params = {
+            'user_id': user_id,
+            'to_user_domain_name': to_user_domain_name,
+            'to_user_id': to_user_id,
+            'amount': amount,
+            'info': info,
+            'order_id': order_id
+        }
+
+        url = self._generate_api_url(self.config.USER_TRANSFER_URL, **params)
+        return self.post_req(url, params)

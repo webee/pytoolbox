@@ -43,3 +43,5 @@ class Config:
     GET_CREATE_ACCOUNT_USER_URL = '/user_mapping/users/{user_id}'
 
     LIST_USER_TRANSACTIONS_URL = "/biz/users/{user_id}/transactions"
+
+    USER_TRANSFER_URL = "/biz/users/{user_id}/transfer"
